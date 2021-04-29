@@ -3,7 +3,10 @@
  */
 package qp;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class MfStructure {
 
@@ -37,6 +40,54 @@ public class MfStructure {
 		this.CV = mf_struct.CV;
 		this.G = mf_struct.G;
 		this.n = mf_struct.n;
+	}
+
+	public void readFile(String filename) {
+		try {
+			File myObj = new File(filename);
+
+			if (myObj.exists()) {
+				Scanner myReader = new Scanner(myObj);;
+
+				String input;
+				while (myReader.hasNextLine()) {
+					input = myReader.nextLine();
+					 System.out.println(input);
+
+					switch(input) {
+					case "SELECT ATTRIBUTE(S):":
+						if(myReader.hasNextLine()) {
+							input = myReader.nextLine();
+							String arr[] = input.split("[,]"); 
+							for(String i : arr)
+								this.S.add(i.trim());
+							// System.out.println(this.S.get(1));
+						}
+						break;
+					case "NUMBER OF GROUPING VARIABLES(n):":
+						break;
+					case "GROUPING ATTRIBUTES(V):":
+						break;
+					case "F-VECT([F]):":
+						break;
+					case "SELECT CONDITION-VECT([σ]):":
+						break;
+					case "HAVING_CONDITION(G):":
+						break;
+					}
+				}
+
+
+				myReader.close();
+			} else {
+				System.out.println("The file does not exist.");
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
 	}
 	
 	

@@ -3,14 +3,11 @@
  */
 package qp;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Scanner;
 
 /**
  * @author SonaliChavan, AbhinavGarg
@@ -25,53 +22,14 @@ public class ConnectDB {
 	public static void main(String[] args) {
 		try {
 			System.out.println("Reading Query 1 query...");
-			File myObj = new File("./sample_queries/query1.txt");
 
-			if (myObj.exists()) {
-				Scanner myReader = new Scanner(myObj);
-				String input;
-				while (myReader.hasNextLine()) {
-					input = myReader.nextLine();
-					 System.out.println(input);
+			MfStructure mf_structure = new MfStructure();
+			mf_structure.readFile("./sample_queries/query1.txt");
 
-					switch(input) {
-					case "SELECT ATTRIBUTE(S):":
-						input = myReader.nextLine();
-						break;
-					case "NUMBER OF GROUPING VARIABLES(n):":
-						break;
-					case "GROUPING ATTRIBUTES(V):":
-						break;
-					case "F-VECT([F]):":
-						break;
-					case "SELECT CONDITION-VECT([σ]):":
-						break;
-					case "HAVING_CONDITION(G):":
-						break;
-					}
-				}
-
-
-				myReader.close();
-			} else {
-				System.out.println("The file does not exist.");
-			}
-		} catch (FileNotFoundException e) {
-			System.out.println("An error occurred.");
-			e.printStackTrace();
-		}
-
-		try {
 			ConnectDB newConnection = new ConnectDB();
 			conn = newConnection.get_connection();
-//			newConnection.retrieve();
-//			System.out.println(conn);
 
 			conn.close();
-
-			// newConnection.connect();
-			// newConnection.retreive();
-
 		} catch(Exception e) {
 
 		}
