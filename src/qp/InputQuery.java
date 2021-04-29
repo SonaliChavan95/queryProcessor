@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package qp;
 
@@ -8,12 +8,12 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class MfStructure {
+public class InputQuery {
 
 	// Select attributes
 	public ArrayList<String> S;
 	// Number of grouping variables
-	public int n; 
+	public int n;
 	// Grouping Attributes
 	public ArrayList<String> V;
 	// F Vector
@@ -22,9 +22,9 @@ public class MfStructure {
 	public ArrayList<String> CV;
 	// Having Condition
 	public String G;
-	
-	
-	MfStructure() {
+
+
+	InputQuery() {
 		this.S = new ArrayList<String>();
 		this.V = new ArrayList<String>();
 		this.F = new ArrayList<String>();
@@ -32,8 +32,8 @@ public class MfStructure {
 		this.G = new String();
 		this.n = 0;
 	}
-	
-	MfStructure(MfStructure mf_struct) {
+
+	InputQuery(InputQuery mf_struct) {
 		this.S = mf_struct.S;
 		this.V = mf_struct.V;
 		this.F = mf_struct.F;
@@ -59,7 +59,7 @@ public class MfStructure {
 					case "SELECT ATTRIBUTE(S):":
 						if(myReader.hasNextLine()) {
 							input = myReader.nextLine();
-							String arr[] = input.split("[,]"); 
+							String arr[] = input.split("[,]");
 							for(String i : arr)
 								this.S.add(i.trim());
 							// System.out.println(this.S.get(1));
@@ -75,7 +75,7 @@ public class MfStructure {
 					case "GROUPING ATTRIBUTES(V):":
 						if(myReader.hasNextLine()) {
 							input = myReader.nextLine();
-							String arr[] = input.split("[,]"); 
+							String arr[] = input.split("[,]");
 							for(String i : arr)
 								this.V.add(i.trim());
 							// System.out.println(this.V.get(1));
@@ -84,7 +84,7 @@ public class MfStructure {
 					case "F-VECT([F]):":
 						if(myReader.hasNextLine()) {
 							input = myReader.nextLine();
-							String arr[] = input.split("[,]"); 
+							String arr[] = input.split("[,]");
 							for(String i : arr)
 								this.F.add(i.trim());
 							// System.out.println(this.F.get(1));
@@ -95,9 +95,9 @@ public class MfStructure {
 							input = myReader.nextLine();
 							if(input.equals("HAVING_CONDITION(G):"))
 								break;
-							
+
 							System.out.println(input);
-							this.CV.add(input.trim());								
+							this.CV.add(input.trim());
 						}
 						// System.out.println(this.CV.get(3));
 
@@ -122,6 +122,6 @@ public class MfStructure {
 			e.printStackTrace();
 		}
 	}
-	
-	
+
+
 }

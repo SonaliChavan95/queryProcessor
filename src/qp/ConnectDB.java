@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package qp;
 
@@ -15,7 +15,7 @@ public class ConnectDB {
 	ConnectDB() {
 		connection = null;
 	}
-	
+
 	public Connection get_connection() {
 		// JDBC driver name and database URL
 		// final String JDBC_DRIVER = "org.postgresql.Driver";
@@ -42,24 +42,14 @@ public class ConnectDB {
 		}
 		return connection;
 	}
-	
+
 	//Function to retrieve from the database and process on the resultset received
 	void retrieve() {
 		try {
 			//Connection con = DriverManager.getConnection(url, usr, pwd);
 			//connect to the database using the password and username
 			System.out.println("Success connecting server!");
-			ResultSet rs;
-			//resultset object gets the set of values retrieved from the database
-			boolean more;
-			int i=1, j=0;
-			Statement st = connection.createStatement();
-			//statement created to execute the query
-			String ret = "select * from sales";
-			rs = st.executeQuery(ret);
-			//executing the query
-			more=rs.next();
-			//checking if more rows available
+
 			System.out.printf("%-8s","Customer  ");             //left aligned
 			System.out.printf("%-7s","Product  ");              //left aligned
 			System.out.printf("%-5s","Day    " +"");            //left aligned
@@ -69,14 +59,19 @@ public class ConnectDB {
 			System.out.printf("%-5s%n","Quant  ");              //left aligned
 			System.out.println("========  =======  =====  ========  =====  ========  =====");
 
+			Statement st = connection.createStatement(); //statement created to execute the query
+			//resultset object gets the set of values retrieved from the database
+			ResultSet rs = st.executeQuery("select * from sales"); //executing the query
+			boolean more = rs.next(); //checking if more rows available
+
 			while(more) {
-				System.out.printf("%-8s  ",rs.getString(1));            //left aligned
-				System.out.printf("%-7s  ",rs.getString(2));            //left aligned
-				System.out.printf("%5s  ",rs.getInt(3));             //right aligned
-				System.out.printf("%8s  ",rs.getInt(4));            //right aligned
-				System.out.printf("%5s  ",rs.getInt(5));             //right aligned
-				System.out.printf("%-8s  ",rs.getString(6));            //right aligned
-				System.out.printf("%5s%n",rs.getString(7));   		//rightaligned
+				System.out.printf("%-8s  ", rs.getString(1));            //left aligned
+				System.out.printf("%-7s  ", rs.getString(2));            //left aligned
+				System.out.printf("%5s  ", rs.getInt(3));             //right aligned
+				System.out.printf("%8s  ", rs.getInt(4));            //right aligned
+				System.out.printf("%5s  ", rs.getInt(5));             //right aligned
+				System.out.printf("%-8s  ", rs.getString(6));            //right aligned
+				System.out.printf("%5s%n", rs.getString(7));   		//rightaligned
 				more = rs.next();
 			}
 		} catch(SQLException e) {
@@ -84,4 +79,23 @@ public class ConnectDB {
 			e.printStackTrace();
 		}
 	}
+
+//	void set_info_schema() {
+//		String SQLQuery = "select column_name, data_type "
+//				+ "from information_schema.columns "
+//				+ "where table_name = 'calls'";
+//		try {
+//			Statement st = connection.createStatement();
+//			ResultSet rs = st.executeQuery(SQLQuery);
+//
+//			while(rs.next()) {
+//				String col = rs.getString("column_name");
+//				String type = rs.getString("data_type");
+//				infoSchema.addValue(col, type);
+//			}
+//		}
+//		catch (SQLException ex) {
+//			ex.printStackTrace();
+//		}
+//	}
 }
