@@ -1,5 +1,6 @@
 package qp;
 
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.HashMap;
 
 public class Project {
 	static Connection conn;
@@ -25,11 +27,11 @@ public class Project {
 			input_query.readFile("./sample_queries/query1.txt");
 
 			ConnectDB newConnection = new ConnectDB();
-			newConnection.get_connection();
+			newConnection.getConnection();
 			// newConnection.retrieve();
 
-			Generator file_generator = new Generator();
-			file_generator.generateCode(input_query);
+			CodeGenerator file_generator = new CodeGenerator();
+			file_generator.generateCode(input_query, newConnection.infoSchema);
 
 			conn.close();
 		} catch(Exception e) {

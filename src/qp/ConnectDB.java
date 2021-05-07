@@ -8,15 +8,18 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
+import java.util.HashMap;
 
 public class ConnectDB {
 	Connection connection;
+	public HashMap<String, String> infoSchema = new HashMap<String, String>();
 
 	ConnectDB() {
 		connection = null;
 	}
 
-	public Connection get_connection() {
+	public Connection getConnection() {
 		// JDBC driver name and database URL
 		// final String JDBC_DRIVER = "org.postgresql.Driver";
 		final String DB_URL = "jdbc:postgresql://localhost:5432/sales";
@@ -36,6 +39,8 @@ public class ConnectDB {
 			} else {
 				System.out.println("DB connection failed");
 			}
+
+			setInfoSchema();
 
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -80,22 +85,40 @@ public class ConnectDB {
 		}
 	}
 
-//	void set_info_schema() {
-//		String SQLQuery = "select column_name, data_type "
-//				+ "from information_schema.columns "
-//				+ "where table_name = 'calls'";
-//		try {
-//			Statement st = connection.createStatement();
-//			ResultSet rs = st.executeQuery(SQLQuery);
-//
-//			while(rs.next()) {
-//				String col = rs.getString("column_name");
-//				String type = rs.getString("data_type");
-//				infoSchema.addValue(col, type);
-//			}
-//		}
-//		catch (SQLException ex) {
-//			ex.printStackTrace();
-//		}
-//	}
+	void setInfoSchema() {
+		String SQLQuery = "SELECT column_name, data_type "
+				+ "FROM information_schema.columns "
+				+ "WHERE table_name = 'sales'";
+
+		try {
+			Statement st = connection.createStatement();
+			ResultSet rs = st.executeQuery(SQLQuery);
+
+			String col, type;
+
+			while(rs.next()) {
+				col = rs.getString("column_name");
+				type = columnDataType(rs.getString("data_type"));
+				infoSchema.put(col, type);
+			}
+//			System.out.println("-------Sales Table Information----------");
+//			System.out.println(Collections.singletonList(infoSchema));
+//			System.out.println("----------------------------------------");
+		}
+		catch (SQLException ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	private String columnDataType(String type) {
+		switch(type) {
+		case "character varying":
+		case "character":
+			return "String";
+		case "integer":
+			return "int";
+		default:
+			return "";
+		}
+	}
 }
