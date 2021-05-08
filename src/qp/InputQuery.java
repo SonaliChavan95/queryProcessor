@@ -53,7 +53,6 @@ public class InputQuery {
 				while (myReader.hasNextLine()) {
 					if(!input.equals("HAVING_CONDITION(G):"))
 						input = myReader.nextLine();
-					System.out.println(input);
 
 					switch(input) {
 					case "SELECT ATTRIBUTE(S):":
@@ -62,14 +61,12 @@ public class InputQuery {
 							String arr[] = input.split("[,]");
 							for(String i : arr)
 								this.S.add(i.trim());
-							// System.out.println(this.S.get(1));
 						}
 						break;
 					case "NUMBER OF GROUPING VARIABLES(n):":
 						if(myReader.hasNextLine()) {
 							input = myReader.nextLine();
 							this.n = Integer.parseInt(input);
-							// System.out.println(this.S.get(1));
 						}
 						break;
 					case "GROUPING ATTRIBUTES(V):":
@@ -78,7 +75,6 @@ public class InputQuery {
 							String arr[] = input.split("[,]");
 							for(String i : arr)
 								this.V.add(i.trim());
-							// System.out.println(this.V.get(1));
 						}
 						break;
 					case "F-VECT([F]):":
@@ -87,7 +83,6 @@ public class InputQuery {
 							String arr[] = input.split("[,]");
 							for(String i : arr)
 								this.F.add(i.trim());
-							// System.out.println(this.F.get(1));
 						}
 						break;
 					case "SELECT CONDITION-VECT([σ]):":
@@ -95,18 +90,14 @@ public class InputQuery {
 							input = myReader.nextLine();
 							if(input.equals("HAVING_CONDITION(G):"))
 								break;
-
-							System.out.println(input);
 							this.CV.add(input.trim());
 						}
-						// System.out.println(this.CV.get(3));
 
 						break;
 					case "HAVING_CONDITION(G):":
 						if(myReader.hasNextLine()) {
 							input = myReader.nextLine();
 							this.G = input.trim();
-							System.out.println(this.G);
 						}
 						break;
 					}

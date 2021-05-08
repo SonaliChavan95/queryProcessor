@@ -1,14 +1,14 @@
 SELECT ATTRIBUTE(S):
-cust, prod, sum_1_quant, min_2_quant, sum_3_quant
+cust,prod, sum_1_quant, sum_2_quant, sum_3_quant
 NUMBER OF GROUPING VARIABLES(n):
 3
 GROUPING ATTRIBUTES(V):
-cust, prod
+cust,prod
 F-VECT([F]):
-sum_1_quant, avg_1_quant, min_2_quant, sum_3_quant, avg_3_quant
+sum_1_quant, avg_1_quant, sum_2_quant, sum_3_quant, avg_3_quant
 SELECT CONDITION-VECT([σ]):
 1.state="NY" and 1.quant>30
 2.state="NJ"
 3.state="CT"
 HAVING_CONDITION(G):
-sum_1_quant > 2 * min_2_quant or avg_1_quant > avg_3_quant
+sum_1_quant > 2 * sum_2_quant or avg_1_quant > avg_3_quant
