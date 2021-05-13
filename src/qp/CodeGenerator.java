@@ -11,7 +11,7 @@ public class CodeGenerator {
 		this.input_query = inputQ;
 		this.infoSchema = infoSchema;
 	}
-	
+
 	public String generateConnectDB() {
 		String connectDB = "package qp.output;\n"
 				+ "\n"
@@ -115,21 +115,25 @@ public class CodeGenerator {
 				+ "";
 		return connectDB;
 	}
-	
+
 	public String generateMfStructClass() {
 		String mfStructClass = generateMfStruct(this.input_query, this.infoSchema);
 		return mfStructClass;
 	}
-	
+
 	public String generateCode() {
 		InputQuery input_query = this.input_query;
 		HashMap<String, String> infoSchema = this.infoSchema;
-				
-		String importCommands = "package qp.output;\nimport java.sql.*;\n" + "import java.util.ArrayList;\n" + "import java.util.HashSet;\n"
-				+ "import java.util.Set;\n" + "import java.sql.Connection;\n\n";
+
+		String importCommands = "package qp.output;\n"
+				+ "import java.sql.*;\n"
+				+ "import java.util.ArrayList;\n"
+				+ "import java.util.HashSet;\n"
+				+ "import java.util.Set;\n"
+				+ "import java.sql.Connection;\n\n";
 
 		// Generate MFStruct class
-		
+
 
 		String generatedCodeClass = "public class Query {\n";
 		String dbConnectionObj = "\tstatic Connection conn;\n";
@@ -137,11 +141,14 @@ public class CodeGenerator {
 		// array of MFStruct objects
 		String mfStructObj = "\tstatic ArrayList<MfStruct> mfStruct = new ArrayList<MfStruct>();\n";
 
-		String startQuery = "\tpublic static void main(String[] args) {\n" + "\t\ttry {\n"
+		String startQuery = "\tpublic static void main(String[] args) {\n"
+				+ "\t\ttry {\n"
 				+ "\t\t\tSystem.out.println(\"----Generated Code-----\");\n"
-				+ "\t\t\tConnectDB newConnection = new ConnectDB();\n" + "\t\t\tconn = newConnection.getConnection();\n"
+				+ "\t\t\tConnectDB newConnection = new ConnectDB();\n"
+				+ "\t\t\tconn = newConnection.getConnection();\n"
 				+ "\t\t\tString queryStr = \"SELECT * FROM sales\";\n"
-				+ "\t\t\tStatement st = conn.createStatement();\n" + "\t\t\tResultSet rs;\n";
+				+ "\t\t\tStatement st = conn.createStatement();\n"
+				+ "\t\t\tResultSet rs;\n";
 
 		String firstScan = populateGroupingAttributes(input_query, infoSchema);
 
@@ -149,8 +156,12 @@ public class CodeGenerator {
 
 		String printOutput = generatePrintOutput(input_query);
 
-		String endCode = "\n" + "\t\t\t" + "conn.close();\n" + "\t\t} catch(Exception e) {\n" + "\n" + "\t\t}\n"
-				+ "\t}\n" + "}";
+		String endCode = "\n"
+				+ "\t\t\t"
+				+ "conn.close();\n"
+				+ "\t\t} catch(Exception e) {\n\n"
+				+ "\t\t}\n"
+				+ "\t}\n}";
 
 		String code = importCommands + generatedCodeClass + dbConnectionObj + mfStructObj + startQuery
 				+ firstScan + furtherScans + printOutput + endCode;
@@ -163,7 +174,7 @@ public class CodeGenerator {
 		// input_query.V; // GA
 		// input_query.F; // FV
 
-		String mfStruct = "\n// MFStruct created using Grouping Attributes and F vectors \n" 
+		String mfStruct = "\n// MFStruct created using Grouping Attributes and F vectors \n"
 				+ "package qp.output;\n\n"
 				+ "class MfStruct { \n";
 
@@ -204,12 +215,9 @@ public class CodeGenerator {
 		}
 
 		for (String var : input_query.F) {
-//			int defaultValue = 0;
 			if (var.contains("min")) {
-//				defaultValue = Integer.MAX_VALUE;
-				constrVarAssignment += "\t\t" + "this." + var + " = "+ Integer.MAX_VALUE + ";\n";
-			} 
-			
+				constrVarAssignment += "\t\t" + "this." + var + " = Integer.MAX_VALUE;\n";
+			}
 		}
 
 		i = 0;
@@ -235,11 +243,17 @@ public class CodeGenerator {
 	}
 
 	String populateGroupingAttributes(InputQuery input_query, HashMap<String, String> infoSchema) {
-		String groupingAttrCode = "\t\t\t" + "// STEP 1: Populate Grouping attributes\n" + "\t\t\t"
-				+ "rs = st.executeQuery(queryStr);\n" + "\t\t\t" + "Set<String> uniqueGAttr = new HashSet<String>();\n"
-				+ "\t\t\t" + "MfStruct newRow;\n" + "\t\t\t"
-				+ "System.out.println(\"----STEP 1: Perform 0th Scan-------\");\n" 
-				+ "\t\t\t" 
+		String groupingAttrCode = "\t\t\t"
+				+ "// STEP 1: Populate Grouping attributes\n"
+				+ "\t\t\t"
+				+ "rs = st.executeQuery(queryStr);\n"
+				+ "\t\t\t"
+				+ "Set<String> uniqueGAttr = new HashSet<String>();\n"
+				+ "\t\t\t"
+				+ "MfStruct newRow;\n"
+				+ "\t\t\t"
+				+ "System.out.println(\"----STEP 1: Perform 0th Scan-------\");\n"
+				+ "\t\t\t"
 				+ "String uniqueKey;\n";
 
 		String xyz = "";
@@ -258,10 +272,16 @@ public class CodeGenerator {
 		groupingAttrCode += "\n\t\t\twhile(rs.next()) {\n";
 		groupingAttrCode += xyz;
 		groupingAttrCode += "\t\t\t\t" + "uniqueKey = " + uniqKey + ".toLowerCase();\n";
-		groupingAttrCode += "\t\t\t\t" + "if(!uniqueGAttr.contains(uniqueKey)) {\n" + "\t\t\t\t\t"
-				+ "uniqueGAttr.add(uniqueKey);\n" + "\t\t\t\t\t" + "newRow = new MfStruct"
-				+ uniqKey.toString().replace("+", ",") + "; \n" + "\t\t\t\t\t" + "mfStruct.add(newRow);\n" + "\t\t\t\t"
-				+ "}\n\t\t\t" + "}\n";
+		groupingAttrCode += "\t\t\t\t"
+				+ "if(!uniqueGAttr.contains(uniqueKey)) {\n"
+				+ "\t\t\t\t\t"
+				+ "uniqueGAttr.add(uniqueKey);\n"
+				+ "\t\t\t\t\t"
+				+ "newRow = new MfStruct"
+				+ uniqKey.toString().replace("+", ",")
+				+ "; \n\t\t\t\t\t"
+				+ "mfStruct.add(newRow);\n\t\t\t\t"
+				+ "}\n\t\t\t}\n";
 
 		return groupingAttrCode;
 	}
@@ -335,10 +355,7 @@ public class CodeGenerator {
 						if (var2.contains(i + "")) {
 							arr = var2.split("_");
 							operationOnGV += "\t\t\t\t\t\t\t";
-							
-							operationOnGV += "if (row." + var2 + " == 0) row." + var2 + " = 0;\n";
-							operationOnGV += "\t\t\t\t\t\t\t";
-							
+
 							switch (arr[0]) {
 							case "sum":
 								operationOnGV += "row." + var2 + " += rs.getInt(\"" + arr[2] + "\");";
@@ -355,14 +372,16 @@ public class CodeGenerator {
 										+ "\"));";
 								break;
 							case "count":
-								operationOnGV += "row." + var2 + " = count++;";
+								operationOnGV += "row." + var2 + "++;";
 							}
 							operationOnGV += "\n";
 						}
 					}
 
-					operationOnGV += "\n" + "\t\t\t\t\t\t" + "}\n" + "\t\t\t\t\t" + "}\n" + "\t\t\t\t" + "}\n"
-							+ "\t\t\t" + "}\n";
+					operationOnGV += "\n\t\t\t\t\t\t}\n"
+							+ "\t\t\t\t\t}\n\t\t\t\t"
+							+ "}\n"
+							+ "\t\t\t}\n";
 
 				}
 			}
@@ -390,14 +409,14 @@ public class CodeGenerator {
 			}
 			selectAttrs += "\t\t\tSystem.out.printf("+attr+");\n";
 		}
-	
+
 		output += "\n\t\t\t" + "//Scan mf struct and print out the results\n";
 		output += selectAttrs
 				+ "\t\t\tSystem.out.println(\""+"\\n"+ separator +"\");\n\n";
-		
 
-		output += "\t\t\t" 
-			   + "for(MfStruct row: mfStruct) {\n" 
+
+		output += "\t\t\t"
+			   + "for(MfStruct row: mfStruct) {\n"
 			   + "\t\t\t\t"
 			   + "System.out.println(row.toString());\n"
 			   + "\t\t\t" + "}\n";

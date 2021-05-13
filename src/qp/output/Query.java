@@ -43,9 +43,7 @@ public class Query {
 					prod = rs.getString("prod");
 					for(MfStruct row: mfStruct) {
 						if(row.cust.equals(cust) && row.prod.equals(prod)){
-							if (row.sum_1_quant == 0) row.sum_1_quant = 0;
 							row.sum_1_quant += rs.getInt("quant");
-							if (row.avg_1_quant == 0) row.avg_1_quant = 0;
 							
 
 						}
@@ -60,8 +58,9 @@ public class Query {
 					prod = rs.getString("prod");
 					for(MfStruct row: mfStruct) {
 						if(row.cust.equals(cust) && row.prod.equals(prod)){
-							if (row.min_2_quant == 0) row.min_2_quant = 0;
 							row.min_2_quant = Math.min(row.min_2_quant, rs.getInt("quant"));
+							row.max_2_quant = Math.max(row.max_2_quant, rs.getInt("quant"));
+							row.count_2_quant++;
 
 						}
 					}
@@ -75,10 +74,9 @@ public class Query {
 					prod = rs.getString("prod");
 					for(MfStruct row: mfStruct) {
 						if(row.cust.equals(cust) && row.prod.equals(prod)){
-							if (row.sum_3_quant == 0) row.sum_3_quant = 0;
 							row.sum_3_quant += rs.getInt("quant");
-							if (row.avg_3_quant == 0) row.avg_3_quant = 0;
 							
+							row.max_3_quant = Math.max(row.max_3_quant, rs.getInt("quant"));
 
 						}
 					}
@@ -90,8 +88,11 @@ public class Query {
 			System.out.printf("%-7s","Product   ");
 			System.out.printf("%-10s","sum_1_quant  ");
 			System.out.printf("%-10s","min_2_quant  ");
+			System.out.printf("%-10s","max_2_quant  ");
+			System.out.printf("%-10s","count_2_quant  ");
 			System.out.printf("%-10s","sum_3_quant  ");
-			System.out.println("\n========  ========  ===========  ===========  ===========  ");
+			System.out.printf("%-10s","max_3_quant  ");
+			System.out.println("\n========  ========  ===========  ===========  ===========  ===========  ===========  ===========  ");
 
 			for(MfStruct row: mfStruct) {
 				System.out.println(row.toString());

@@ -60,7 +60,7 @@ public class Project {
 			String code = codeGenerator.generateCode();
 			
 			// create MfStruct class
-			writeToFile(connectDB, "./src/qp/output/ConnectDB.java");
+//			writeToFile(connectDB, "./src/qp/output/ConnectDB.java");
 			
 			// create MfStruct class
 			writeToFile(mfStructClass, "./src/qp/output/MFStruct.java");
