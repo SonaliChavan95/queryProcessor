@@ -13,53 +13,38 @@ public class CodeGenerator {
 	}
 
 	public String generateConnectDB() {
-		String connectDB = "package qp.output;\n"
-				+ "\n"
-				+ "/**\n"
+		String connectDB = "/**\n"
 				+ " *\n"
 				+ " */\n"
+				+ "package qp.output;\n"
+				+ "\n"
 				+ "import java.sql.Connection;\n"
 				+ "import java.sql.DriverManager;\n"
 				+ "import java.sql.ResultSet;\n"
 				+ "import java.sql.SQLException;\n"
 				+ "import java.sql.Statement;\n"
-				+ "import java.util.Collections;\n"
 				+ "import java.util.HashMap;\n"
 				+ "\n"
-				+ "/**\n"
-				+ " * This is the main method which creates a connection \n"
-				+ " * between the java program and the postgres server\n"
-				+ " * @return Connection type object\n"
-				+ " * @exception Exception error.\n"
-				+ " */\n"
 				+ "public class ConnectDB {\n"
 				+ "	Connection connection;\n"
 				+ "	public HashMap<String, String> infoSchema = new HashMap<String, String>();\n"
 				+ "\n"
-				+ "	/**\n"
-				+ "	  * Constructor for this class\n"
-				+ "	  */\n"
 				+ "	ConnectDB() {\n"
 				+ "		connection = null;\n"
 				+ "	}\n"
 				+ "\n"
-				+ "	/**\n"
-				+ "	  * This method creates a connection \n"
-				+ "	  * between the program and the postgres server\n"
-				+ "	  * @return Connection type object\n"
-				+ "	  * @exception Exception error.\n"
-				+ "	  */\n"
 				+ "	public Connection getConnection() {\n"
-				+ "		String username = System.getenv(\"DB_USER\");\n"
-				+ "		String pass = System.getenv(\"DB_PASS\");\n"
-				+ "		String tableName = System.getenv(\"TABLE\");"
 				+ "		// JDBC driver name and database URL\n"
 				+ "		// final String JDBC_DRIVER = \"org.postgresql.Driver\";\n"
-				+ "		final String DB_URL = \"jdbc:postgresql://localhost:5432/sales\";\n"
-				+ "\n"
+				+ "		String username = System.getenv(\"DB_USER\");\n"
+				+ "		String pass = System.getenv(\"DB_PASS\");\n"
+				+ "		String tableName = System.getenv(\"TABLE\");\n"
+				+ "		\n"
+				+ "		final String DB_URL = \"jdbc:postgresql://localhost:5432/\"+tableName;\n"
+				+ "		\n"
 				+ "		// Database credentials\n"
-				+ "		final String USER = \"abhinavgarg\";\n"
-				+ "		final String PASS = \"hello123\";\n"
+				+ "		final String USER = username;\n"
+				+ "		final String PASS = pass;\n"
 				+ "\n"
 				+ "		try {\n"
 				+ "\n"
@@ -120,8 +105,73 @@ public class CodeGenerator {
 	}
 
 	public String generateMfStructClass() {
-		String mfStructClass = generateMfStruct(this.input_query, this.infoSchema);
-		return mfStructClass;
+		// input_query.V; // GA
+		// input_query.F; // FV
+		InputQuery input_query = this.input_query;
+		HashMap<String, String> infoSchema = this.infoSchema;
+
+		String mfStruct = "\n// MFStruct created using Grouping Attributes and F vectors \n"
+				+ "package qp.output;\n\n"
+				+ "class MfStruct { \n";
+	
+		// Add Grouping attributes in
+		for (String var : input_query.V) {
+			if (infoSchema.containsKey(var)) {
+				mfStruct += "\t" + infoSchema.get(var) + " " + var + "; \n";
+			}
+		}
+	
+		// Add F vectors
+		for (String var : input_query.F) {
+			mfStruct += "\tint " + var + "; \n";
+		}
+	
+		// Create a Constructor
+		// MfStruct(String cust, String prod) {
+		// this.cust = cust;
+		// this.prod = prod;
+		// this.sum_1_quant = 0;
+		// this.sum_2_quant = 0;
+		// }
+		mfStruct += "\n\tMfStruct(";
+	
+		// For Construtor variable assignment
+		String constructorArgs[] = new String[input_query.V.size()];
+		String constrVarAssignment = "";
+	
+		// For toString()
+		String[] printVars = new String[input_query.S.size()];
+	
+		int i = 0;
+	
+		for (String var : input_query.V) {
+			constructorArgs[i++] = infoSchema.get(var) + " " + var;
+	
+			constrVarAssignment += "\t\t" + "this." + var + " = " + var + ";\n";
+		}
+	
+		for (String var : input_query.F) {
+			if (var.contains("min")) {
+				constrVarAssignment += "\t\t" + "this." + var + " = Integer.MAX_VALUE;\n";
+			}
+		}
+	
+		i = 0;
+		for (String var : input_query.S) {
+			printVars[i++] = "this." + var;
+		}
+	
+		mfStruct += String.join(", ", constructorArgs) + ") {\n";
+		mfStruct += constrVarAssignment;
+	
+//		// Override toString()
+//		mfStruct += "\t}\n\n\tpublic String toString() { \n\t\t return (\n\t\t\t";
+//	
+//		mfStruct += String.join(" + \"\\t\"+ ", printVars);
+//		 "\n\t\t);\n\t}"
+		mfStruct += "\t}\n}\n";
+	
+		return mfStruct;
 	}
 
 	public String generateCode() {
@@ -171,74 +221,6 @@ public class CodeGenerator {
 
 		// write to file "/Output/FinalQuery.java"
 		return code;
-	}
-
-	String generateMfStruct(InputQuery input_query, HashMap<String, String> infoSchema) {
-		// input_query.V; // GA
-		// input_query.F; // FV
-
-		String mfStruct = "\n// MFStruct created using Grouping Attributes and F vectors \n"
-				+ "package qp.output;\n\n"
-				+ "class MfStruct { \n";
-
-		// Add Grouping attributes in
-		for (String var : input_query.V) {
-			if (infoSchema.containsKey(var)) {
-				mfStruct += "\t" + infoSchema.get(var) + " " + var + "; \n";
-			}
-		}
-
-		// Add F vectors
-		for (String var : input_query.F) {
-			mfStruct += "\tint " + var + "; \n";
-		}
-
-		// Create a Constructor
-		// MfStruct(String cust, String prod) {
-		// this.cust = cust;
-		// this.prod = prod;
-		// this.sum_1_quant = 0;
-		// this.sum_2_quant = 0;
-		// }
-		mfStruct += "\n\tMfStruct(";
-
-		// For Construtor variable assignment
-		String constructorArgs[] = new String[input_query.V.size()];
-		String constrVarAssignment = "";
-
-		// For toString()
-		String[] printVars = new String[input_query.S.size()];
-
-		int i = 0;
-
-		for (String var : input_query.V) {
-			constructorArgs[i++] = infoSchema.get(var) + " " + var;
-
-			constrVarAssignment += "\t\t" + "this." + var + " = " + var + ";\n";
-		}
-
-		for (String var : input_query.F) {
-			if (var.contains("min")) {
-				constrVarAssignment += "\t\t" + "this." + var + " = Integer.MAX_VALUE;\n";
-			}
-		}
-
-		i = 0;
-		for (String var : input_query.S) {
-			printVars[i++] = "this." + var;
-		}
-
-		mfStruct += String.join(", ", constructorArgs) + ") {\n";
-		mfStruct += constrVarAssignment;
-
-		// Override toString()
-		mfStruct += "\t}\n\n\tpublic String toString() { \n\t\t return (\n\t\t\t";
-
-		mfStruct += String.join(" + \"\\t\"+ ", printVars);
-
-		mfStruct += "\n\t\t);\n\t}\n}\n";
-
-		return mfStruct;
 	}
 
 	String captalizeFirstLetter(String str) {
@@ -396,19 +378,20 @@ public class CodeGenerator {
 		String selectAttrs = "";
 		String separator = "";
 		String output = "";
+		String values = "";
 
 		// Table Header
 		for (String var : input_query.S) {
 			String attr = "";
 			if (var.equals("cust")) {
-				attr = "\"%-8s\",\"Customer  \"";
-				separator += "========  ";
+				attr = "\"%-10s\",\"Customer\"";
+				separator += "========= ";
 			} else if (var.equals("prod")) {
-				attr = "\"%-7s\",\"Product   \"";
-				separator += "========  ";
+				attr = "\"%-10s\",\"Product\"";
+				separator += "========= ";
 			} else {
-				attr = "\"%-10s\",\"" + var + "  \"";
-				separator += "===========  ";
+				attr = "\"%-12s\",\"" + var + "  \"";
+				separator += "============ ";
 			}
 			selectAttrs += "\t\t\tSystem.out.printf("+attr+");\n";
 		}
@@ -417,11 +400,22 @@ public class CodeGenerator {
 		output += selectAttrs
 				+ "\t\t\tSystem.out.println(\""+"\\n"+ separator +"\");\n\n";
 
-
+		for (String var : input_query.S) {
+			String value = "";
+			if (var.equals("cust")) {
+				value = "\"%-10s\", row."+ var;
+			} else if (var.equals("prod")) {
+				value = "\"%-10s\", row."+ var;
+			} else {
+				value = "\"%12s\", row."+ var;
+			}
+			values += "\t\t\t\tSystem.out.printf("+value+");\n";
+		}
+		
 		output += "\t\t\t"
 			   + "for(MfStruct row: mfStruct) {\n"
-			   + "\t\t\t\t"
-			   + "System.out.println(row.toString());\n"
+			   + values
+			   + "\t\t\t\tSystem.out.print('\\n');\n"
 			   + "\t\t\t" + "}\n";
 		return output;
 	}

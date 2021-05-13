@@ -8,7 +8,6 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collections;
 import java.util.HashMap;
 
 public class ConnectDB {
@@ -52,43 +51,6 @@ public class ConnectDB {
 		return connection;
 	}
 
-	//Function to retrieve from the database and process on the resultset received
-	void retrieve() {
-		try {
-			//Connection con = DriverManager.getConnection(url, usr, pwd);
-			//connect to the database using the password and username
-			System.out.println("Success connecting server!");
-
-			System.out.printf("%-8s","Customer  ");             //left aligned
-			System.out.printf("%-7s","Product  ");              //left aligned
-			System.out.printf("%-5s","Day    " +"");            //left aligned
-			System.out.printf("%-10s","Month    ");          	//left aligned
-			System.out.printf("%-5s","Year   ");                //left aligned
-			System.out.printf("%-10s","State    ");          	//left aligned
-			System.out.printf("%-5s%n","Quant  ");              //left aligned
-			System.out.println("========  =======  =====  ========  =====  ========  =====");
-
-			Statement st = connection.createStatement(); //statement created to execute the query
-			//resultset object gets the set of values retrieved from the database
-			ResultSet rs = st.executeQuery("select * from sales"); //executing the query
-			boolean more = rs.next(); //checking if more rows available
-
-			while(more) {
-				System.out.printf("%-8s  ", rs.getString(1));            //left aligned
-				System.out.printf("%-7s  ", rs.getString(2));            //left aligned
-				System.out.printf("%5s  ", rs.getInt(3));             //right aligned
-				System.out.printf("%8s  ", rs.getInt(4));            //right aligned
-				System.out.printf("%5s  ", rs.getInt(5));             //right aligned
-				System.out.printf("%-8s  ", rs.getString(6));            //right aligned
-				System.out.printf("%5s%n", rs.getString(7));   		//rightaligned
-				more = rs.next();
-			}
-		} catch(SQLException e) {
-			System.out.println("Connection URL or username or password errors!");
-			e.printStackTrace();
-		}
-	}
-
 	void setInfoSchema() {
 		String SQLQuery = "SELECT column_name, data_type "
 				+ "FROM information_schema.columns "
@@ -105,9 +67,6 @@ public class ConnectDB {
 				type = columnDataType(rs.getString("data_type"));
 				infoSchema.put(col, type);
 			}
-//			System.out.println("-------Sales Table Information----------");
-//			System.out.println(Collections.singletonList(infoSchema));
-//			System.out.println("----------------------------------------");
 		}
 		catch (SQLException ex) {
 			ex.printStackTrace();

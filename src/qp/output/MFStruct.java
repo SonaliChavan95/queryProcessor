@@ -19,10 +19,4 @@ class MfStruct {
 		this.prod = prod;
 		this.min_2_quant = Integer.MAX_VALUE;
 	}
-
-	public String toString() { 
-		 return (
-			this.cust + "\t"+ this.prod + "\t"+ this.sum_1_quant + "\t"+ this.min_2_quant + "\t"+ this.max_2_quant + "\t"+ this.count_2_quant + "\t"+ this.sum_3_quant + "\t"+ this.max_3_quant
-		);
-	}
 }

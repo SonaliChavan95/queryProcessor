@@ -4,7 +4,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 
-// TODO: LOGIC: 80%
+// LOGIC: 80%
 // TODO: Check the type of input queries
 // TODO: Figure out conditions for condition vector
 // TODO: Handle average function
@@ -12,14 +12,14 @@ import java.sql.Connection;
 // TODO: Take input interactively and through file
 // TODO: Handle Having Condition 
 
-// TODO: Styling: 20%
+// Styling: 20%
 // TODO: Header Comment (Overall comments about the project) - 10 points
 // TODO: Function Comments - 20 points
 // TODO: Line Comment - 20 points 
 // TODO: Meaningful Names (for functions, variables, etc.) - 10 points
-// TODO: Strings – Left Justified - 15 points
-// TODO: Numbers – Right Justified - 15 points
-// TODO: Modular design (use of classes, methods/functions) - 10 points - Done
+// TODO: (Done)Strings – Left Justified - 15 points 
+// TODO: (Done)Numbers – Right Justified - 15 points
+// TODO: (Done)Modular design (use of classes, methods/functions) - 10 points
 
 
 /**
@@ -63,7 +63,7 @@ public class Project {
 			writeToFile(connectDB, "./src/qp/output/ConnectDB.java");
 			
 			// Create MfStruct class
-			writeToFile(mfStructClass, "./src/qp/output/MFStruct.java");
+			writeToFile(mfStructClass, "./src/qp/output/MfStruct.java");
 			
 			// CreateQuery Class
 			writeToFile(code, "./src/qp/output/Query.java");

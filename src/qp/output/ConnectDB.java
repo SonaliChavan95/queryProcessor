@@ -1,49 +1,35 @@
-package qp.output;
-
 /**
  *
  */
+package qp.output;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collections;
 import java.util.HashMap;
 
-/**
- * This is the main method which creates a connection 
- * between the java program and the postgres server
- * @return Connection type object
- * @exception Exception error.
- */
 public class ConnectDB {
 	Connection connection;
 	public HashMap<String, String> infoSchema = new HashMap<String, String>();
 
-	/**
-	  * Constructor for this class
-	  */
 	ConnectDB() {
 		connection = null;
 	}
 
-	/**
-	  * This method creates a connection 
-	  * between the program and the postgres server
-	  * @return Connection type object
-	  * @exception Exception error.
-	  */
 	public Connection getConnection() {
+		// JDBC driver name and database URL
+		// final String JDBC_DRIVER = "org.postgresql.Driver";
 		String username = System.getenv("DB_USER");
 		String pass = System.getenv("DB_PASS");
-		String tableName = System.getenv("TABLE");		// JDBC driver name and database URL
-		// final String JDBC_DRIVER = "org.postgresql.Driver";
-		final String DB_URL = "jdbc:postgresql://localhost:5432/sales";
-
+		String tableName = System.getenv("TABLE");
+		
+		final String DB_URL = "jdbc:postgresql://localhost:5432/"+tableName;
+		
 		// Database credentials
-		final String USER = "abhinavgarg";
-		final String PASS = "hello123";
+		final String USER = username;
+		final String PASS = pass;
 
 		try {
 

@@ -84,18 +84,26 @@ public class Query {
 			}
 
 			//Scan mf struct and print out the results
-			System.out.printf("%-8s","Customer  ");
-			System.out.printf("%-7s","Product   ");
-			System.out.printf("%-10s","sum_1_quant  ");
-			System.out.printf("%-10s","min_2_quant  ");
-			System.out.printf("%-10s","max_2_quant  ");
-			System.out.printf("%-10s","count_2_quant  ");
-			System.out.printf("%-10s","sum_3_quant  ");
-			System.out.printf("%-10s","max_3_quant  ");
-			System.out.println("\n========  ========  ===========  ===========  ===========  ===========  ===========  ===========  ");
+			System.out.printf("%-10s","Customer");
+			System.out.printf("%-10s","Product");
+			System.out.printf("%-12s","sum_1_quant  ");
+			System.out.printf("%-12s","min_2_quant  ");
+			System.out.printf("%-12s","max_2_quant  ");
+			System.out.printf("%-12s","count_2_quant  ");
+			System.out.printf("%-12s","sum_3_quant  ");
+			System.out.printf("%-12s","max_3_quant  ");
+			System.out.println("\n========= ========= ============ ============ ============ ============ ============ ============ ");
 
 			for(MfStruct row: mfStruct) {
-				System.out.println(row.toString());
+				System.out.printf("%-10s", row.cust);
+				System.out.printf("%-10s", row.prod);
+				System.out.printf("%12s", row.sum_1_quant);
+				System.out.printf("%12s", row.min_2_quant);
+				System.out.printf("%12s", row.max_2_quant);
+				System.out.printf("%12s", row.count_2_quant);
+				System.out.printf("%12s", row.sum_3_quant);
+				System.out.printf("%12s", row.max_3_quant);
+				System.out.print('\n');
 			}
 
 			conn.close();
