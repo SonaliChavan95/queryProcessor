@@ -51,11 +51,20 @@ public class Project {
 			conn = newConnection.getConnection();
 			
 			// Generate the code
-			CodeGenerator file_generator = new CodeGenerator();
-			String code = file_generator.generateCode(input_query, newConnection.infoSchema);
+			CodeGenerator codeGenerator = new CodeGenerator(input_query, newConnection.infoSchema);
 			
-			// Write the code into file
-			writeToFile(code, "./src/qp/GeneratedCode.java");
+			String mfStructClass = codeGenerator.generateMfStructClass(); 
+			String connectDB = codeGenerator.generateConnectDB();
+			String code = codeGenerator.generateCode();
+			
+			// create MfStruct class
+			writeToFile(connectDB, "./src/qp/output/ConnectDB.java");
+			
+			// create MfStruct class
+			writeToFile(mfStructClass, "./src/qp/output/MFStruct.java");
+			
+			// createQuery Class
+			writeToFile(code, "./src/qp/output/Query.java");
 			conn.close();
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -82,7 +91,7 @@ public class Project {
 			
 			// close file writer and print a message indicating that file has been generated
 			myWriter.close();
-			System.out.println("Successfully created file in Java");
+			System.out.println("Successfully created file in: "+ "\"" + fileName + "\"");
 		} catch(IOException e) {
 			e.printStackTrace();
 		}

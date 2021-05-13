@@ -1,18 +1,137 @@
 package qp;
 
-import java.sql.DriverManager;
 import java.util.HashMap;
 import java.util.StringJoiner;
 
 public class CodeGenerator {
-	public String generateCode(InputQuery input_query, HashMap<String, String> infoSchema) {
-		String importCommands = "import java.sql.*;\n" + "import java.util.ArrayList;\n" + "import java.util.HashSet;\n"
+	private InputQuery input_query;
+	private HashMap<String, String> infoSchema;
+
+	public CodeGenerator(InputQuery inputQ, HashMap<String, String> infoSchema) {
+		this.input_query = inputQ;
+		this.infoSchema = infoSchema;
+	}
+	
+	public String generateConnectDB() {
+		String connectDB = "package qp.output;\n"
+				+ "\n"
+				+ "/**\n"
+				+ " *\n"
+				+ " */\n"
+				+ "import java.sql.Connection;\n"
+				+ "import java.sql.DriverManager;\n"
+				+ "import java.sql.ResultSet;\n"
+				+ "import java.sql.SQLException;\n"
+				+ "import java.sql.Statement;\n"
+				+ "import java.util.Collections;\n"
+				+ "import java.util.HashMap;\n"
+				+ "\n"
+				+ "/**\n"
+				+ " * This is the main method which creates a connection \n"
+				+ " * between the java program and the postgres server\n"
+				+ " * @return Connection type object\n"
+				+ " * @exception Exception error.\n"
+				+ " */\n"
+				+ "public class ConnectDB {\n"
+				+ "	Connection connection;\n"
+				+ "	public HashMap<String, String> infoSchema = new HashMap<String, String>();\n"
+				+ "\n"
+				+ "	/**\n"
+				+ "	  * Constructor for this class\n"
+				+ "	  */\n"
+				+ "	ConnectDB() {\n"
+				+ "		connection = null;\n"
+				+ "	}\n"
+				+ "\n"
+				+ "	/**\n"
+				+ "	  * This method creates a connection \n"
+				+ "	  * between the program and the postgres server\n"
+				+ "	  * @return Connection type object\n"
+				+ "	  * @exception Exception error.\n"
+				+ "	  */\n"
+				+ "	public Connection getConnection() {\n"
+				+ "		// JDBC driver name and database URL\n"
+				+ "		// final String JDBC_DRIVER = \"org.postgresql.Driver\";\n"
+				+ "		final String DB_URL = \"jdbc:postgresql://localhost:5432/sales\";\n"
+				+ "\n"
+				+ "		// Database credentials\n"
+				+ "		final String USER = \"abhinavgarg\";\n"
+				+ "		final String PASS = \"hello123\";\n"
+				+ "\n"
+				+ "		try {\n"
+				+ "\n"
+				+ "			// Open a connection\n"
+				+ "			System.out.println(\"Connecting to database....\");\n"
+				+ "			connection = DriverManager.getConnection(DB_URL, USER, PASS);\n"
+				+ "\n"
+				+ "			if(connection != null) {\n"
+				+ "				System.out.println(\"Successful DB connection\");\n"
+				+ "			} else {\n"
+				+ "				System.out.println(\"DB connection failed\");\n"
+				+ "			}\n"
+				+ "\n"
+				+ "			setInfoSchema();\n"
+				+ "\n"
+				+ "		} catch(Exception e) {\n"
+				+ "			e.printStackTrace();\n"
+				+ "		}\n"
+				+ "		return connection;\n"
+				+ "	}\n"
+				+ "\n"
+				+ "	void setInfoSchema() {\n"
+				+ "		String SQLQuery = \"SELECT column_name, data_type \"\n"
+				+ "				+ \"FROM information_schema.columns \"\n"
+				+ "				+ \"WHERE table_name = 'sales'\";\n"
+				+ "\n"
+				+ "		try {\n"
+				+ "			Statement st = connection.createStatement();\n"
+				+ "			ResultSet rs = st.executeQuery(SQLQuery);\n"
+				+ "\n"
+				+ "			String col, type;\n"
+				+ "\n"
+				+ "			while(rs.next()) {\n"
+				+ "				col = rs.getString(\"column_name\");\n"
+				+ "				type = columnDataType(rs.getString(\"data_type\"));\n"
+				+ "				infoSchema.put(col, type);\n"
+				+ "			}\n"
+				+ "		}\n"
+				+ "		catch (SQLException ex) {\n"
+				+ "			ex.printStackTrace();\n"
+				+ "		}\n"
+				+ "	}\n"
+				+ "\n"
+				+ "	private String columnDataType(String type) {\n"
+				+ "		switch(type) {\n"
+				+ "		case \"character varying\":\n"
+				+ "		case \"character\":\n"
+				+ "			return \"String\";\n"
+				+ "		case \"integer\":\n"
+				+ "			return \"int\";\n"
+				+ "		default:\n"
+				+ "			return \"\";\n"
+				+ "		}\n"
+				+ "	}\n"
+				+ "}\n"
+				+ "";
+		return connectDB;
+	}
+	
+	public String generateMfStructClass() {
+		String mfStructClass = generateMfStruct(this.input_query, this.infoSchema);
+		return mfStructClass;
+	}
+	
+	public String generateCode() {
+		InputQuery input_query = this.input_query;
+		HashMap<String, String> infoSchema = this.infoSchema;
+				
+		String importCommands = "package qp.output;\nimport java.sql.*;\n" + "import java.util.ArrayList;\n" + "import java.util.HashSet;\n"
 				+ "import java.util.Set;\n" + "import java.sql.Connection;\n\n";
 
 		// Generate MFStruct class
-		String mfStructClass = generateMfStruct(input_query, infoSchema);
+		
 
-		String generatedCodeClass = "public class GeneratedCode {\n";
+		String generatedCodeClass = "public class Query {\n";
 		String dbConnectionObj = "\tstatic Connection conn;\n";
 
 		// array of MFStruct objects
@@ -33,7 +152,7 @@ public class CodeGenerator {
 		String endCode = "\n" + "\t\t\t" + "conn.close();\n" + "\t\t} catch(Exception e) {\n" + "\n" + "\t\t}\n"
 				+ "\t}\n" + "}";
 
-		String code = importCommands + mfStructClass + generatedCodeClass + dbConnectionObj + mfStructObj + startQuery
+		String code = importCommands + generatedCodeClass + dbConnectionObj + mfStructObj + startQuery
 				+ firstScan + furtherScans + printOutput + endCode;
 
 		// write to file "/Output/FinalQuery.java"
@@ -44,7 +163,9 @@ public class CodeGenerator {
 		// input_query.V; // GA
 		// input_query.F; // FV
 
-		String mfStruct = "// MFStruct created using Grouping Attributes and F vectors \n" + "class MfStruct { \n";
+		String mfStruct = "\n// MFStruct created using Grouping Attributes and F vectors \n" 
+				+ "package qp.output;\n\n"
+				+ "class MfStruct { \n";
 
 		// Add Grouping attributes in
 		for (String var : input_query.V) {
