@@ -1,41 +1,45 @@
 package qp;
 
-/**
- * @author SonaliChavan, AbhinavGarg
- *
- */
-
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 
+// TODO: LOGIC: 80%
+// TODO: Check the type of input queries
+// TODO: Figure out conditions for condition vector
+// TODO: Handle average function
+// TODO: Handle count aggregate function
+// TODO: Take input interactively and through file
 
+// TODO: Styling: 20%
+// TODO: Header Comment (Overall comments about the project) - 10 points
+// TODO: Function Comments - 20 points
+// TODO: Line Comment - 20 points 
+// TODO: Meaningful Names (for functions, variables, etc.) - 10 points
+// TODO: Strings – Left Justified - 15 points
+// TODO: Numbers – Right Justified - 15 points
+// TODO: Modular design (use of classes, methods/functions) - 10 points
+
+
+/**
+* This project project is to build a query processing engine for Ad-Hoc OLAP queries. 
+* The query construct is based on an extended SQL syntax known as MF and EMF queries 
+* (i.e., MultiFeature and Extended MultiFeature queries).
+* @author  @author SonaliChavan, AbhinavGarg
+* @version 1.0
+* @since   2021-04-29
+*/
 public class Project {
 	static Connection conn;
-
 	/**
-	 * @param args
-	 */
-
-	// TODO: LOGIC: 80%
-	// TODO: Check the type of input queries
-	// TODO: Figure out conditions for condition vector
-	// TODO: Handle average and count aggregate functions
-	// TODO: Take input interactively and through file
-	
-	
-	// TODO: Styling: 20%
-	// TODO: Header Comment (Overall comments about the project) - 10 points
-	// TODO: Function Comments - 20 points
-	// TODO: Line Comment - 20 points 
-	// TODO: Meaningful Names (for functions, variables, etc.) - 10 points
-	// TODO: Strings – Left Justified - 15 points
-	// TODO: Numbers – Right Justified - 15 points
-	// TODO: Modular design (use of classes, methods/functions) - 10 points
-	
+	  * This is the main method which makes use of addNum method.
+	  * @param args Unused.
+	  * @return Nothing.
+	  * @exception Exception error.
+	  */
 	public static void main(String[] args) {
 		try {
-			String inputFile = "./sample_queries/query1.txt"; 
+			String inputFile = "./sample_queries/query2.txt"; 
 			System.out.println("Reading "+ inputFile);
 
 			// Read the input query
@@ -44,7 +48,7 @@ public class Project {
 			
 			// Make the connection
 			ConnectDB newConnection = new ConnectDB();
-			newConnection.getConnection();
+			conn = newConnection.getConnection();
 			
 			// Generate the code
 			CodeGenerator file_generator = new CodeGenerator();
@@ -58,6 +62,16 @@ public class Project {
 		}
 	}
 	
+	/**
+	 * This function is writing out the generated code in the file.
+	 * 
+	 * This function expects two arguments
+	 * @param code is the generated code that we want to write into the file.
+	 * @param fileName is the name of the file  where we want to print the code into.
+	 * @return nothing
+	 * @exception IOException On input error.
+	 * @see IOException
+	 */
 	static void writeToFile(String code, String fileName) {
 		try {
 			// Create a file with filename

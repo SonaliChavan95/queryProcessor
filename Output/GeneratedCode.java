@@ -17,11 +17,7 @@ class MfStruct {
 	MfStruct(String cust, String prod) {
 		this.cust = cust;
 		this.prod = prod;
-		this.sum_1_quant = 0;
-		this.avg_1_quant = 0;
-		this.min_2_quant = 0;
-		this.sum_3_quant = 0;
-		this.avg_3_quant = 0;
+		this.min_2_quant = 2147483647;
 	}
 
 	public String toString() { 
@@ -68,7 +64,11 @@ public class GeneratedCode {
 					prod = rs.getString("prod");
 					for(MfStruct row: mfStruct) {
 						if(row.cust.equals(cust) && row.prod.equals(prod)){
-							row.sum_1_quant += rs.getInt("quant");							
+							if (row.sum_1_quant == 0) row.sum_1_quant = 0;
+							row.sum_1_quant += rs.getInt("quant");
+							if (row.avg_1_quant == 0) row.avg_1_quant = 0;
+							
+
 						}
 					}
 				}
@@ -81,7 +81,9 @@ public class GeneratedCode {
 					prod = rs.getString("prod");
 					for(MfStruct row: mfStruct) {
 						if(row.cust.equals(cust) && row.prod.equals(prod)){
+							if (row.min_2_quant == 0) row.min_2_quant = 0;
 							row.min_2_quant = Math.min(row.min_2_quant, rs.getInt("quant"));
+
 						}
 					}
 				}
@@ -94,15 +96,24 @@ public class GeneratedCode {
 					prod = rs.getString("prod");
 					for(MfStruct row: mfStruct) {
 						if(row.cust.equals(cust) && row.prod.equals(prod)){
-							row.sum_3_quant += rs.getInt("quant");							
+							if (row.sum_3_quant == 0) row.sum_3_quant = 0;
+							row.sum_3_quant += rs.getInt("quant");
+							if (row.avg_3_quant == 0) row.avg_3_quant = 0;
+							
+
 						}
 					}
 				}
 			}
 
 			//Scan mf struct and print out the results
-			System.out.println("Customer  Product  sum_1_quant  min_2_quant  sum_3_quant  ");
-			System.out.println("-------------------------------------------------");
+			System.out.printf("%-8s","Customer  ");
+			System.out.printf("%-7s","Product   ");
+			System.out.printf("%-10s","sum_1_quant  ");
+			System.out.printf("%-10s","min_2_quant  ");
+			System.out.printf("%-10s","sum_3_quant  ");
+			System.out.println("\n========  ========  ===========  ===========  ===========  ");
+
 			for(MfStruct row: mfStruct) {
 				System.out.println(row.toString());
 			}
