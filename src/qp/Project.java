@@ -55,7 +55,7 @@ public class Project {
 			String code = file_generator.generateCode(input_query, newConnection.infoSchema);
 			
 			// Write the code into file
-			writeToFile(code, "./Output/GeneratedCode.java");
+			writeToFile(code, "./src/qp/GeneratedCode.java");
 			conn.close();
 		} catch(Exception e) {
 			e.printStackTrace();
