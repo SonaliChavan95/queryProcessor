@@ -22,11 +22,15 @@ public class ConnectDB {
 	public Connection getConnection() {
 		// JDBC driver name and database URL
 		// final String JDBC_DRIVER = "org.postgresql.Driver";
-		final String DB_URL = "jdbc:postgresql://localhost:5432/sales";
-
+		String username = System.getenv("DB_USER");
+		String pass = System.getenv("DB_PASS");
+		String tableName = System.getenv("TABLE");
+		
+		final String DB_URL = "jdbc:postgresql://localhost:5432/"+tableName;
+		
 		// Database credentials
-		final String USER = "postgres";
-		final String PASS = "hello123";
+		final String USER = username;
+		final String PASS = pass;
 
 		try {
 

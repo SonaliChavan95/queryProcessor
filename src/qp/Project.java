@@ -40,7 +40,7 @@ public class Project {
 	  */
 	public static void main(String[] args) {
 		try {
-			String inputFile = "./sample_queries/query1.txt";
+			String inputFile = "./sample_queries/query2.txt";
 			System.out.println("Reading "+ inputFile);
 
 			// Read the input query
@@ -59,13 +59,13 @@ public class Project {
 			String connectDB = codeGenerator.generateConnectDB();
 			String code = codeGenerator.generateCode();
 			
-			// create MfStruct class
-//			writeToFile(connectDB, "./src/qp/output/ConnectDB.java");
+			// Create ConnectDB class
+			writeToFile(connectDB, "./src/qp/output/ConnectDB.java");
 			
-			// create MfStruct class
+			// Create MfStruct class
 			writeToFile(mfStructClass, "./src/qp/output/MFStruct.java");
 			
-			// createQuery Class
+			// CreateQuery Class
 			writeToFile(code, "./src/qp/output/Query.java");
 			conn.close();
 		} catch(Exception e) {

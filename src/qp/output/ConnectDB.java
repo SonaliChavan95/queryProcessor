@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 
 /**
- * This is the main method which creates a connection
+ * This is the main method which creates a connection 
  * between the java program and the postgres server
  * @return Connection type object
  * @exception Exception error.
@@ -29,13 +29,15 @@ public class ConnectDB {
 	}
 
 	/**
-	  * This method creates a connection
+	  * This method creates a connection 
 	  * between the program and the postgres server
 	  * @return Connection type object
 	  * @exception Exception error.
 	  */
 	public Connection getConnection() {
-		// JDBC driver name and database URL
+		String username = System.getenv("DB_USER");
+		String pass = System.getenv("DB_PASS");
+		String tableName = System.getenv("TABLE");		// JDBC driver name and database URL
 		// final String JDBC_DRIVER = "org.postgresql.Driver";
 		final String DB_URL = "jdbc:postgresql://localhost:5432/sales";
 
