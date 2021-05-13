@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 
 /**
- * This is the main method which creates a connection 
+ * This is the main method which creates a connection
  * between the java program and the postgres server
  * @return Connection type object
  * @exception Exception error.
@@ -29,7 +29,7 @@ public class ConnectDB {
 	}
 
 	/**
-	  * This method creates a connection 
+	  * This method creates a connection
 	  * between the program and the postgres server
 	  * @return Connection type object
 	  * @exception Exception error.
