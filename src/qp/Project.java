@@ -10,6 +10,7 @@ import java.sql.Connection;
 // TODO: Handle average function
 // TODO: Handle count aggregate function
 // TODO: Take input interactively and through file
+// TODO: Handle Having Condition 
 
 // TODO: Styling: 20%
 // TODO: Header Comment (Overall comments about the project) - 10 points
@@ -18,7 +19,7 @@ import java.sql.Connection;
 // TODO: Meaningful Names (for functions, variables, etc.) - 10 points
 // TODO: Strings – Left Justified - 15 points
 // TODO: Numbers – Right Justified - 15 points
-// TODO: Modular design (use of classes, methods/functions) - 10 points
+// TODO: Modular design (use of classes, methods/functions) - 10 points - Done
 
 
 /**
@@ -39,17 +40,18 @@ public class Project {
 	  */
 	public static void main(String[] args) {
 		try {
-			String inputFile = "./sample_queries/query2.txt"; 
+			String inputFile = "./sample_queries/query1.txt";
 			System.out.println("Reading "+ inputFile);
 
 			// Read the input query
 			InputQuery input_query = new InputQuery();
 			input_query.readFile(inputFile);
 			
-			// Make the connection
+			// Make the connection and take out schema information
 			ConnectDB newConnection = new ConnectDB();
 			conn = newConnection.getConnection();
 			
+
 			// Generate the code
 			CodeGenerator codeGenerator = new CodeGenerator(input_query, newConnection.infoSchema);
 			
