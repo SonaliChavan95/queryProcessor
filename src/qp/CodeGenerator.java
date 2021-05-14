@@ -274,7 +274,7 @@ public class CodeGenerator {
 
     // aggregateFunctions = generateAggregateFunctions(i);
     generateStep1.append(aggregateFunctions.get("0"));
-    
+
     generateStep1.append("\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n");
     return generateStep1.toString();
   }
@@ -345,7 +345,7 @@ public class CodeGenerator {
 
   void generateAggregateFunctions() {
     // String[] aggregateFunctions = new String[2];
-    StringJoiner avgs = new StringJoiner("\t\t\t");;
+    StringJoiner avgs = new StringJoiner("\t\t\t\t");;
     StringBuilder aggregates;
     String[] arr;
 
@@ -362,11 +362,12 @@ public class CodeGenerator {
             aggregates.append("row." + fVector + " += " + rsGetColumnValue(arr[2]) + ";");
             break;
           case "avg":
-            avgs.add("\trow." + fVector + " = "
-              + "row." + fVector.replace("avg", "count") + " > 0 ? (double)"
-              + "row." + fVector.replace("avg", "sum") + " / "
+            avgs.add("\tavg = "
+              + "row." + fVector.replace("avg", "count") + " > 0 ? "
+              + "(double) row." + fVector.replace("avg", "sum") + " / "
               + "row." + fVector.replace("avg", "count") + " : 0;\n"
             );
+            avgs.add("row." + fVector + " = Math.round(avg * 100) / 100D;");
             break;
           case "min":
             aggregates.append("row." + fVector + " = Math.min(row." + fVector + ", " + rsGetColumnValue(arr[2]) + ");");
@@ -435,6 +436,7 @@ public class CodeGenerator {
 
     // Calculate avg
     operationOnGV.append("\n\t\t\tIterator<MfStruct> itr = mfStruct.iterator();\n");
+    operationOnGV.append("\n\t\t\tdouble avg;\n");
     operationOnGV.append("\t\t\twhile (itr.hasNext()) {\n");
     operationOnGV.append("\t\t\t\tMfStruct row = itr.next();\n\t\t\t\t");
     operationOnGV.append("//Calculate Average\n\t\t\t");
@@ -487,7 +489,7 @@ public class CodeGenerator {
       }
       selectAttrs.append("\t\t\tSystem.out.printf("+attr+");\n");
     }
-    
+
     printOutput.append("\n\t\t\t" + "//Scan mf struct and print out the results\n");
     printOutput.append(selectAttrs);
     printOutput.append("\t\t\tSystem.out.println(\""+"\\n"+ separator +"\");\n\n");
@@ -502,7 +504,7 @@ public class CodeGenerator {
       } else if (var.contains("min")) {
     	String varName = "print_"+var;
         value = "\"%12s\", "+varName;
-        
+
         // check for min value, if record value not present for selected group, print 0
         printZero.append("\n\t\t\t\t");
         printZero.append("int "+varName+ " = row."+ var +";\n");
@@ -523,7 +525,7 @@ public class CodeGenerator {
     printOutput.append(attrValues);
     printOutput.append("\t\t\t\tSystem.out.print('\\n');\n");
     printOutput.append("\t\t\t" + "}\n");
-    
+
     return printOutput.toString();
   }
 }

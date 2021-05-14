@@ -71,11 +71,13 @@ public class Query {
 			}
 
 			Iterator<MfStruct> itr = mfStruct.iterator();
+
+			double avg;
 			while (itr.hasNext()) {
 				MfStruct row = itr.next();
 				//Calculate Average
-				row.avg_0_quant = row.count_0_quant > 0 ? (double)row.sum_0_quant / row.count_0_quant : 0;
-
+				avg = row.count_0_quant > 0 ? (double) row.sum_0_quant / row.count_0_quant : 0;
+				row.avg_0_quant = Math.round(avg * 100) / 100D;
 				//Apply Having Condition
 				if (!(0.1 * row.sum_1_quant < row.max_0_quant)) {
 					itr.remove();
