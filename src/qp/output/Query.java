@@ -18,32 +18,29 @@ public class Query {
 			Statement st = conn.createStatement();
 			ResultSet rs;
 			// STEP 1: Populate Grouping attributes
+			System.out.println("----STEP 1: Perform 0th Scan-------");
 			rs = st.executeQuery(queryStr);
 			Set<String> uniqueGAttr = new HashSet<String>();
 			MfStruct newRow;
-			System.out.println("----STEP 1: Perform 0th Scan-------");
 			String uniqueKey;
 			String cust; 
-			String prod; 
 
 			while(rs.next()) {
 				cust = rs.getString("cust");
-				prod = rs.getString("prod");
-				uniqueKey = (cust + prod).toLowerCase();
+				uniqueKey = (cust).toLowerCase();
 				if(!uniqueGAttr.contains(uniqueKey)) {
 					uniqueGAttr.add(uniqueKey);
-					newRow = new MfStruct(cust , prod); 
+					newRow = new MfStruct(cust);
 					mfStruct.add(newRow);
 				}
 			}
 
 			rs = st.executeQuery(queryStr);
 			while(rs.next()) {
-				if(rs.getString("state").equals("NY") && rs.getInt("quant") < 100) {
+				if(rs.getString("state").equals("NY")) {
 					cust = rs.getString("cust");
-					prod = rs.getString("prod");
 					for(MfStruct row: mfStruct) {
-						if(row.cust.equals(cust) && row.prod.equals(prod)){
+						if(row.cust.equals(cust)){
 							row.count_1_quant++;
 							row.sum_1_quant += rs.getInt("quant");
 							
@@ -57,13 +54,9 @@ public class Query {
 			while(rs.next()) {
 				if(rs.getString("state").equals("NJ")) {
 					cust = rs.getString("cust");
-					prod = rs.getString("prod");
 					for(MfStruct row: mfStruct) {
-						if(row.cust.equals(cust) && row.prod.equals(prod)){
-							row.min_2_quant = Math.min(row.min_2_quant, rs.getInt("quant"));
-							row.sum_2_quant += rs.getInt("quant");
-							row.max_2_quant = Math.max(row.max_2_quant, rs.getInt("quant"));
-							row.count_2_quant++;
+						if(row.cust.equals(cust) && row.cust.equals(cust)){
+							row.count_2++;
 
 						}
 					}
@@ -74,13 +67,11 @@ public class Query {
 			while(rs.next()) {
 				if(rs.getString("state").equals("CT")) {
 					cust = rs.getString("cust");
-					prod = rs.getString("prod");
 					for(MfStruct row: mfStruct) {
-						if(row.cust.equals(cust) && row.prod.equals(prod)){
+						if(row.cust.equals(cust) && row.cust.equals(cust) && row.cust.equals(cust)){
 							row.count_3_quant++;
 							
 							row.sum_3_quant += rs.getInt("quant");
-							row.max_3_quant = Math.max(row.max_3_quant, rs.getInt("quant"));
 
 						}
 					}
@@ -95,41 +86,23 @@ public class Query {
 				row.avg_3_quant = row.count_3_quant > 0 ? row.sum_3_quant / row.count_3_quant : 0;
 
 				//Apply Having Condition
-				if (row.sum_1_quant > 2 * row.min_2_quant || row.avg_1_quant > row.avg_3_quant) {
+				if (row.sum_1_quant > 2 * row.count_2 || row.avg_1_quant > row.avg_3_quant) {
 					itr.remove();
 				}
 			}
 
 			//Scan mf struct and print out the results
 			System.out.printf("%-10s","Customer");
-			System.out.printf("%-10s","Product");
 			System.out.printf("%-12s","sum_1_quant  ");
-			System.out.printf("%-12s","sum_2_quant  ");
-			System.out.printf("%-12s","min_2_quant  ");
-			System.out.printf("%-12s","max_2_quant  ");
 			System.out.printf("%-12s","count_2_quant  ");
-			System.out.printf("%-12s","count_3_quant  ");
 			System.out.printf("%-12s","sum_3_quant  ");
-			System.out.printf("%-12s","max_3_quant  ");
-			System.out.printf("%-12s","avg_3_quant  ");
-			System.out.println("\n========= ========= ============ ============ ============ ============ ============ ============ ============ ============ ============ ");
+			System.out.println("\n========= ============ ============ ============ ");
 
 			for(MfStruct row: mfStruct) {
-				int printMin = row.min_2_quant;
-				if (printMin == Integer.MAX_VALUE) {
-					printMin = 0;
-				}
 				System.out.printf("%-10s", row.cust);
-				System.out.printf("%-10s", row.prod);
 				System.out.printf("%12s", row.sum_1_quant);
-				System.out.printf("%12s", row.sum_2_quant);
-				System.out.printf("%12s", printMin);
-				System.out.printf("%12s", row.max_2_quant);
 				System.out.printf("%12s", row.count_2_quant);
-				System.out.printf("%12s", row.count_3_quant);
 				System.out.printf("%12s", row.sum_3_quant);
-				System.out.printf("%12s", row.max_3_quant);
-				System.out.printf("%12s", row.avg_3_quant);
 				System.out.print('\n');
 			}
 

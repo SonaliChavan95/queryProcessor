@@ -47,7 +47,6 @@ public class Project {
 			ConnectDB newConnection = new ConnectDB();
 			conn = newConnection.getConnection();
 
-
 			// Generate the code
 			CodeGenerator codeGenerator = new CodeGenerator(input_query, newConnection.infoSchema);
 

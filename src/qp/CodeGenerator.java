@@ -4,12 +4,12 @@ import java.util.HashMap;
 import java.util.StringJoiner;
 
 public class CodeGenerator {
-	static private InputQuery input_query;
+	static private InputQuery inputQuery;
 	static private HashMap<String, String> infoSchema;
 
-	public CodeGenerator(InputQuery inputQuery, HashMap<String, String> info_schema) {
-		input_query = inputQuery;
-		infoSchema = info_schema;
+	public CodeGenerator(InputQuery inputQuery, HashMap<String, String> infoSchema) {
+		CodeGenerator.inputQuery = inputQuery;
+		CodeGenerator.infoSchema = infoSchema;
 	}
 
 	public String generateConnectDB() {
@@ -105,65 +105,63 @@ public class CodeGenerator {
 	}
 
 	public String generateMfStructClass() {
-		// input_query.V; // GA
-		// input_query.F; // FV
-		String mfStruct = "\n// MFStruct created using Grouping Attributes and F vectors \n"
-				+ "package qp.output;\n\n"
-				+ "class MfStruct { \n";
+    StringBuilder mfStruct = new StringBuilder();
+    StringJoiner classVars = new StringJoiner(";\n", "", ";");
+		StringJoiner constructorArgs = new StringJoiner(", ", "(", ")");
+		StringJoiner constructorVars = new StringJoiner(";\n", "", ";");
 
+    /**
+    * ----------------------------------------
+    * Declare Variables in MfStruct class
+    * ----------------------------------------
+    */
 		// Add Grouping attributes in
-		for (String var : input_query.V) {
+		for (String var : inputQuery.V) {
 			if (infoSchema.containsKey(var)) {
-				mfStruct += "\t" + infoSchema.get(var) + " " + var + "; \n";
+        classVars.add("\t" + infoSchema.get(var) + " " + var);
 			}
 		}
-
 		// Add F vectors
-		for (String var : input_query.F) {
-			mfStruct += "\tint " + var + "; \n";
+		for (String var : inputQuery.F) {
+      classVars.add("\tint " + var);
 		}
 
-		// Create a Constructor
-		// MfStruct(String cust, String prod) {
-		// this.cust = cust;
-		// this.prod = prod;
-		// this.sum_1_quant = 0;
-		// this.sum_2_quant = 0;
-		// }
-		mfStruct += "\n\tMfStruct(";
+		/**
+    * ----------------------------------------
+    * Create constructor MfStruct class
+    * MfStruct(String cust, String prod) {
+    *   this.cust = cust;
+    *   this.prod = prod;
+		*    this.sum_1_quant = 0;
+		*    this.sum_2_quant = 0; }
+    * ----------------------------------------
+    */
 
-		// For Construtor variable assignment
-		String constructorArgs[] = new String[input_query.V.size()];
-		String constrVarAssignment = "";
-
-		// For toString()
-		String[] printVars = new String[input_query.S.size()];
-
-		int i = 0;
-
-		for (String var : input_query.V) {
-			constructorArgs[i++] = infoSchema.get(var) + " " + var;
-
-			constrVarAssignment += "\t\t" + "this." + var + " = " + var + ";\n";
+		for (String var : inputQuery.V) {
+			constructorArgs.add(infoSchema.get(var) + " " + var);
+			constructorVars.add("\t\tthis." + var + " = " + var);
 		}
 
-		for (String var : input_query.F) {
+		for (String var : inputQuery.F) {
 			if (var.contains("min")) {
-				constrVarAssignment += "\t\t" + "this." + var + " = Integer.MAX_VALUE;\n";
+				constructorVars.add("\t\tthis." + var + " = Integer.MAX_VALUE");
 			}
+      // else if(var.contains("max")) {
+      //   constructorVars.add("\t\tthis." + var + " = Integer.MIN_VALUE");
+      // }
 		}
 
-		i = 0;
-		for (String var : input_query.S) {
-			printVars[i++] = "this." + var;
-		}
+    mfStruct.append("\n// MFStruct created using Grouping Attributes and F vectors \n");
+    mfStruct.append("package qp.output;\n\n");
+    mfStruct.append("class MfStruct { \n");
+    mfStruct.append(classVars);
+    mfStruct.append("\n\n\tMfStruct");
+		mfStruct.append(constructorArgs);
+    mfStruct.append(" {\n");
+		mfStruct.append(constructorVars);
+		mfStruct.append("\n\t}\n}\n");
 
-		mfStruct += String.join(", ", constructorArgs) + ") {\n";
-		mfStruct += constrVarAssignment;
-
-		mfStruct += "\t}\n}\n";
-
-		return mfStruct;
+		return mfStruct.toString();
 	}
 
 	public String generateCode() {
@@ -219,192 +217,209 @@ public class CodeGenerator {
 	}
 
 	String populateGroupingAttributes() {
-		String groupingAttrCode = "\t\t\t"
-				+ "// STEP 1: Populate Grouping attributes\n"
-				+ "\t\t\t"
-				+ "rs = st.executeQuery(queryStr);\n"
-				+ "\t\t\t"
-				+ "Set<String> uniqueGAttr = new HashSet<String>();\n"
-				+ "\t\t\t"
-				+ "MfStruct newRow;\n"
-				+ "\t\t\t"
-				+ "System.out.println(\"----STEP 1: Perform 0th Scan-------\");\n"
-				+ "\t\t\t"
-				+ "String uniqueKey;\n";
+    StringBuilder generateStep1 = new StringBuilder();
+    StringJoiner buildUniqKey = new StringJoiner(" + ", "(", ")");
+    StringBuilder fetchGroupingAttr = new StringBuilder();
 
-		String xyz = "";
-		StringJoiner uniqKey = new StringJoiner(" + ", "(", ")");
+		generateStep1.append("\t\t\t// STEP 1: Populate Grouping attributes\n");
+		generateStep1.append("\t\t\tSystem.out.println(\"----STEP 1: Perform 0th Scan-------\");\n");
+		generateStep1.append("\t\t\trs = st.executeQuery(queryStr);\n");
+		generateStep1.append("\t\t\tSet<String> uniqueGAttr = new HashSet<String>();\n");
+		generateStep1.append("\t\t\tMfStruct newRow;\n");
+		generateStep1.append("\t\t\tString uniqueKey;\n");
 
-		// Add Grouping attributes in
-		for (String var : input_query.V) {
+		// Add Grouping attributes V
+		for (String var : inputQuery.V) {
 			if (infoSchema.containsKey(var)) {
-				groupingAttrCode += "\t\t\t" + infoSchema.get(var) + " " + var + "; \n";
-				xyz += "\t\t\t\t" + var + " = rs.get" + captalizeFirstLetter(infoSchema.get(var)) + "(\"" + var
-						+ "\");\n";
-				uniqKey.add(var);
+        // Unique Key used to identify if record is present in mfStruct table i.e. "EmilyMilk"
+        buildUniqKey.add(var);
+
+        // Declare Grouping attributes
+				generateStep1.append("\t\t\t");
+        generateStep1.append((infoSchema.get(var) + " " + var + "; \n"));
+
+        // e.g. cust = rs.getString("cust");
+				fetchGroupingAttr.append("\t\t\t\t");
+        fetchGroupingAttr.append(var + " = " + rsGetColumnValue(var) + ";\n");
 			}
 		}
 
-		groupingAttrCode += "\n\t\t\twhile(rs.next()) {\n";
-		groupingAttrCode += xyz;
-		groupingAttrCode += "\t\t\t\t" + "uniqueKey = " + uniqKey + ".toLowerCase();\n";
-		groupingAttrCode += "\t\t\t\t"
-				+ "if(!uniqueGAttr.contains(uniqueKey)) {\n"
-				+ "\t\t\t\t\t"
-				+ "uniqueGAttr.add(uniqueKey);\n"
-				+ "\t\t\t\t\t"
-				+ "newRow = new MfStruct"
-				+ uniqKey.toString().replace("+", ",")
-				+ "; \n\t\t\t\t\t"
-				+ "mfStruct.add(newRow);\n\t\t\t\t"
-				+ "}\n\t\t\t}\n";
+		generateStep1.append("\n\t\t\twhile(rs.next()) {\n");
+		generateStep1.append(fetchGroupingAttr);
+		generateStep1.append("\t\t\t\tuniqueKey = " + buildUniqKey + ".toLowerCase();\n");
+		generateStep1.append("\t\t\t\tif(!uniqueGAttr.contains(uniqueKey)) {\n");
+		generateStep1.append("\t\t\t\t\tuniqueGAttr.add(uniqueKey);\n");
+		generateStep1.append("\t\t\t\t\tnewRow = new MfStruct");
+		generateStep1.append(buildUniqKey.toString().replace("+", ","));
+		generateStep1.append(";\n\t\t\t\t\t");
+		generateStep1.append("mfStruct.add(newRow);\n\t\t\t\t");
+		generateStep1.append("}\n\t\t\t}\n");
 
-		return groupingAttrCode;
+		return generateStep1.toString();
 	}
 
-	
-	// rs.getString("cust");
-	String abc(String column) {
+	// Return rs.getString("cust");
+	String rsGetColumnValue(String column) {
 		if (infoSchema.containsKey(column)) {
 			return "rs.get" + captalizeFirstLetter(infoSchema.get(column)) + "(\"" + column + "\")";
 		}
 		return null;
 	}
-	
-	String createCondition(String var, int gv) {
-		String[] arr = var.split(" ");
-		String condi, gvCondition = "", operationOnGV = "";
-	    String[] arr2;
-	    for (String c1 : arr) {
-	      switch (c1) {
-	      case "and":
-	    	  gvCondition += " && ";
-	        break;
-	      case "or":
-	    	  gvCondition += " || ";
-	        break;
-	      default:
-	        condi = c1.replace(gv + ".", "");
-	        if(condi.contains("<=")) {
-	        	arr = condi.split("<=");
-	        	gvCondition += abc(arr[0]) + " <= " + arr[1];
-	        } else if(condi.contains(">=")) {
-	        	arr = condi.split(">=");
-	        	gvCondition += abc(arr[0]) + " >= " + arr[1];
-	        } else if(condi.contains("!=")) {
-	        	arr = condi.split("!=");
-	        	gvCondition += abc(arr[0]) + " <= " + arr[1];
-	        } else if(condi.contains("<>")) {
-	        	arr = condi.split("<>");
-	        	gvCondition += abc(arr[0]) + " <> " + arr[1];
-	        } else if (condi.contains("=")) {
-	        	arr = condi.split("=");
-	        	gvCondition += "rs.getString(\"" + arr[0] + "\").equals(" + arr[1] + ")";
-	        } else if (condi.contains("<")){
-	        	arr = condi.split("<");
-	        	gvCondition += abc(arr[0]) + " < " + arr[1];
-	        } else if (condi.contains(">")){
-	        	arr = condi.split(">");
-	        	gvCondition += abc(arr[0]) + " > " + arr[1];
-	        }
-	      }
-	    }
-	    return gvCondition;
+
+	String parseConditionVector(String conditionVector, int groupingVariableNum) {
+    StringBuilder gvCondition = new StringBuilder();
+		String[] conditions = conditionVector.split(" ");
+    String[] splittedCondition = new String[3];
+		String operator = "";
+    boolean equalsFlag = false;
+
+    for (String condition : conditions) {
+      switch (condition.toLowerCase()) {
+      case "and":
+        gvCondition.append(" && ");
+        break;
+      case "or":
+        gvCondition.append(" || ");
+        break;
+      default:
+        // Remove grouping variable number from condition
+        condition = condition.replace(groupingVariableNum + ".", "");
+        equalsFlag = false;
+
+        if(condition.contains("<=")) {
+          operator = "<=";
+          splittedCondition = condition.split("<=");
+        } else if(condition.contains(">=")) {
+          operator = ">=";
+          splittedCondition = condition.split(">=");
+        } else if(condition.contains("!=")) {
+          operator = "!=";
+          splittedCondition = condition.split("!=");
+        } else if(condition.contains("<>")) {
+          operator = "<>";
+          splittedCondition = condition.split("<>");
+        } else if (condition.contains("=")) {
+          equalsFlag = true;
+          operator = ".equals(";
+          splittedCondition = condition.split("=");
+        } else if (condition.contains("<")){
+          operator = "<";
+          splittedCondition = condition.split("<");
+        } else if (condition.contains(">")){
+          operator = ">";
+          splittedCondition = condition.split(">");
+        }
+
+        gvCondition.append(rsGetColumnValue(splittedCondition[0]));
+        gvCondition.append(operator);
+        gvCondition.append(splittedCondition[1]);
+
+        if(equalsFlag) {
+          gvCondition.append(")");
+        }
+      }
+    }
+    return gvCondition.toString();
 	}
 
 	// run loop on selected aggregate functions
 	String performOpOnGV() {
+    StringBuilder operationOnGV = new StringBuilder();
 		// "\n// STEP 1: Perform operations on grouping variable\n";
-		String operationOnGV = "", condi = "", gvCondition = "";
+		String operationOnGV1 = "", condi = "", gvCondition = "";
 		StringJoiner avgs = new StringJoiner("\t\t\t");
+    StringJoiner conditions = new StringJoiner(" && ", "(", ")");
 
-		for (int i = 1; i <= input_query.n; i++) {
-			operationOnGV += "\n\t\t\t" + "rs = st.executeQuery(queryStr);\n" + "\t\t\t" + "while(rs.next()) {\n";
+		for (int i = 1; i <= inputQuery.n; i++) {
+			operationOnGV.append("\n\t\t\trs = st.executeQuery(queryStr);\n");
+      operationOnGV.append("\t\t\twhile(rs.next()) {\n");
 
-			for (String var : input_query.CV) {
+			for (String var : inputQuery.CV) {
 				if (var.startsWith("" + i)) {
 					// Parse condition vector for nth grouping variable
 					// 1.state='NY' and 1.quant>30
-
-					gvCondition = createCondition(var, i);
+					// gvCondition = parseConditionVector(var, i);
 					// Add Grouping attributes in
 
-					operationOnGV += "\t\t\t\t" + "if(" + gvCondition + ") {\n";
+					operationOnGV.append("\t\t\t\tif(");
+          operationOnGV.append(parseConditionVector(var, i));
+          operationOnGV.append(") {\n");
 
-					condi = "";
-					for (String var2 : input_query.V) {
-						if (infoSchema.containsKey(var2)) {
-							condi += "\t\t\t\t\t" + var2 + " = rs.get" + captalizeFirstLetter(infoSchema.get(var2))
-									+ "(\"" + var2 + "\");\n";
+					for (String groupingAttribute : inputQuery.V) {
+						if (infoSchema.containsKey(groupingAttribute)) {
+              operationOnGV.append("\t\t\t\t\t");
+              operationOnGV.append(groupingAttribute);
+              operationOnGV.append(" = ");
+              operationOnGV.append(rsGetColumnValue(groupingAttribute));
+              operationOnGV.append(";\n");
 						}
+
+            conditions.add("row." + groupingAttribute + ".equals(" + groupingAttribute + ")");
 					}
 
-					operationOnGV += condi;
+					// operationOnGV.append(condi);
+					operationOnGV.append("\t\t\t\t\tfor(MfStruct row: mfStruct) {\n");
+          operationOnGV.append("\t\t\t\t\t\tif");
 
-					operationOnGV += "\t\t\t\t\t" + "for(MfStruct row: mfStruct) {\n";
-					StringJoiner condi2 = new StringJoiner(" && ", "(", ")");
+					// for (String groupingAttribute : inputQuery.V) {
+					// 	conditions.add("row." + groupingAttribute + ".equals(" + groupingAttribute + ")");
+					// }
 
-					for (String var2 : input_query.V) {
-						condi2.add("row." + var2 + ".equals(" + var2 + ")");
-					}
-
-					operationOnGV += "\t\t\t\t\t\t" + "if" + condi2 + "{\n";
+					operationOnGV.append(conditions);
+          operationOnGV.append("{\n");
 
 					String[] arr;
-					for (String var2 : input_query.F) {
-
-						if (var2.contains(i + "")) {
-							arr = var2.split("_");
-							operationOnGV += "\t\t\t\t\t\t\t";
+					for (String fVector : inputQuery.F) {
+						if (fVector.contains(i + "")) {
+							arr = fVector.split("_");
+							operationOnGV.append("\t\t\t\t\t\t\t");
 
 							switch (arr[0]) {
 							case "sum":
-								operationOnGV += "row." + var2 + " += rs.getInt(\"" + arr[2] + "\");";
+								operationOnGV.append("row." + fVector + " += " + rsGetColumnValue(arr[2]) + ";");
 								break;
 							case "avg":
-								avgs.add("\trow." + var2 + " = " + "row." + var2.replace("avg", "count") + " > 0 ?" + " row." + var2.replace("avg", "sum") + " / " + "row." + var2.replace("avg", "count") + " : 0" + ";\n");
+								avgs.add("\trow." + fVector + " = "
+                  + "row." + fVector.replace("avg", "count") + " > 0 ? "
+                  + "row." + fVector.replace("avg", "sum") + " / "
+                  + "row." + fVector.replace("avg", "count") + " : 0;\n"
+                );
 								break;
 							case "min":
-								operationOnGV += "row." + var2 + " = Math.min(row." + var2 + ", rs.getInt(\"" + arr[2]
-										+ "\"));";
+								operationOnGV.append("row." + fVector + " = Math.min(row." + fVector + ", " + rsGetColumnValue(arr[2]) + ");");
 								break;
 							case "max":
-								operationOnGV += "row." + var2 + " = Math.max(row." + var2 + ", rs.getInt(\"" + arr[2]
-										+ "\"));";
+								operationOnGV.append("row." + fVector + " = Math.max(row." + fVector + ", " + rsGetColumnValue(arr[2]) + ");");
 								break;
 							case "count":
-								operationOnGV += "row." + var2 + "++;";
+								operationOnGV.append("row." + fVector + "++;");
 							}
-							operationOnGV += "\n";
+							operationOnGV.append("\n");
 						}
 					}
 
-					operationOnGV += "\n\t\t\t\t\t\t}\n"
-							+ "\t\t\t\t\t}\n\t\t\t\t"
-							+ "}\n"
-							+ "\t\t\t}\n";
-
+					operationOnGV.append("\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n");
 				}
 			}
 		}
 
 		// Calculate avg
-		operationOnGV += "\n\t\t\tIterator<MfStruct> itr = mfStruct.iterator();\n"
-				+ "\t\t\twhile (itr.hasNext()) {\n"
-				+ "\t\t\t\tMfStruct row = itr.next();\n\t\t\t\t"
-				+ "//Calculate Average\n\t\t\t";
-		operationOnGV += avgs.toString();
-		
-		operationOnGV += "\n\t\t\t\t//Apply Having Condition"
-				+ "\n\t\t\t\tif (";
-//		operationOnGV += "false";
-		
-//		sum_1_quant > 2 * min_2_quant or avg_1_quant > avg_3_quant
-		
+		operationOnGV.append("\n\t\t\tIterator<MfStruct> itr = mfStruct.iterator();\n");
+	  operationOnGV.append("\t\t\twhile (itr.hasNext()) {\n");
+	  operationOnGV.append("\t\t\t\tMfStruct row = itr.next();\n\t\t\t\t");
+	  operationOnGV.append("//Calculate Average\n\t\t\t");
+		operationOnGV.append(avgs.toString());
+
+		operationOnGV.append("\n\t\t\t\t//Apply Having Condition");
+	  operationOnGV.append("\n\t\t\t\tif (");
+		// operationOnGV += "false";
+
+		// sum_1_quant > 2 * min_2_quant or avg_1_quant > avg_3_quant
+
 		StringJoiner ans = new StringJoiner(" ");
-		String[] hc = input_query.G.split(" ");
+		String[] hc = inputQuery.G.split(" ");
 		for(String con: hc) {
-			if(input_query.F.contains(con)) {
+			if(inputQuery.F.contains(con)) {
 				ans.add("row." + con);
 			} else if(con.equals("and")) {
 				ans.add("&&");
@@ -414,17 +429,15 @@ public class CodeGenerator {
 				ans.add(con);
 			}
 		}
-		
-		
-		operationOnGV += ans.toString();
-		
-		
-//		row.sum_1_quant > 2 * row.min_2_quant || row.avg_1_quant > row.avg_3_quant
-		operationOnGV += ") {\n"
-				+ "\t\t\t\t\titr.remove();\n"
-				+ "\t\t\t\t}\n";
-		operationOnGV += "\t\t\t}\n";
-		return operationOnGV;
+
+		operationOnGV.append(ans.toString());
+
+		// row.sum_1_quant > 2 * row.min_2_quant || row.avg_1_quant > row.avg_3_quant
+		operationOnGV.append(") {\n");
+		operationOnGV.append("\t\t\t\t\titr.remove();\n");
+		operationOnGV.append("\t\t\t\t}\n");
+		operationOnGV.append("\t\t\t}\n");
+		return operationOnGV.toString();
 	}
 
 	String generatePrintOutput() {
@@ -434,7 +447,7 @@ public class CodeGenerator {
 		String values = "";
 
 		// Table Header
-		for (String var : input_query.S) {
+		for (String var : inputQuery.S) {
 			String attr = "";
 			if (var.equals("cust")) {
 				attr = "\"%-10s\",\"Customer\"";
@@ -455,7 +468,7 @@ public class CodeGenerator {
 
 		String printZero = "";
 		// Table Rows
-		for (String var : input_query.S) {
+		for (String var : inputQuery.S) {
 			String value = "";
 			if (var.equals("cust")) {
 				value = "\"%-10s\", row."+ var;
