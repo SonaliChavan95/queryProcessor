@@ -263,29 +263,19 @@ public class CodeGenerator {
     generateStep1.append("mfStruct.add(newRow);\n\t\t\t\t");
     generateStep1.append("}\n\t\t\t");
 
-    // TODO
-
-//    for(MfStruct row: mfStruct) {
-//						if(row.cust.equals(cust)){
-//							row.sum_0_quant += rs.getInt("quant");
-//							row.count_0_quant++;
-//
-//						}
-//					}
-
     for (String groupingAttribute : inputQuery.V) {
       conditions.add("row." + groupingAttribute + ".equals(" + groupingAttribute + ")");
     }
 
-    generateStep1.append("\t\t\t\t\tfor(MfStruct row: mfStruct) {\n");
-    generateStep1.append("\t\t\t\t\t\tif");
+    generateStep1.append("\tfor(MfStruct row: mfStruct) {\n");
+    generateStep1.append("\t\t\t\t\tif");
     generateStep1.append(conditions);
     generateStep1.append("{\n");
 
     // aggregateFunctions = generateAggregateFunctions(i);
     generateStep1.append(aggregateFunctions.get("0"));
-
-    generateStep1.append("}\n}\n}\n");
+    
+    generateStep1.append("\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n");
     return generateStep1.toString();
   }
 

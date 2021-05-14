@@ -33,15 +33,15 @@ public class Query {
 					newRow = new MfStruct(cust);
 					mfStruct.add(newRow);
 				}
-								for(MfStruct row: mfStruct) {
-						if(row.cust.equals(cust)){
+				for(MfStruct row: mfStruct) {
+					if(row.cust.equals(cust)){
 							row.sum_0_quant += rs.getInt("quant");
 							row.max_0_quant = Math.max(row.max_0_quant, rs.getInt("quant"));
 							
 							row.count_0_quant++;
-}
-}
-}
+					}
+				}
+			}
 
 			rs = st.executeQuery(queryStr);
 			while(rs.next()) {
@@ -97,7 +97,7 @@ public class Query {
 				System.out.printf("%12s", row.sum_2_quant);
 				System.out.printf("%12s", row.count_1_quant);
 				System.out.printf("%12s", row.max_0_quant);
-				System.out.printf("%12s", "  "+row.avg_0_quant);
+				System.out.printf("%12s", row.avg_0_quant);
 				System.out.print('\n');
 			}
 

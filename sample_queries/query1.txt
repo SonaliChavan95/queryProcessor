@@ -10,4 +10,4 @@ SELECT CONDITION-VECT([σ]):
 1.state="NY"
 2.state="NJ"
 HAVING_CONDITION(G):
-sum_1_quant < max_0_quant
+0.1 * sum_1_quant < max_0_quant
