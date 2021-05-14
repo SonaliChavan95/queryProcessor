@@ -5,12 +5,8 @@ import java.io.IOException;
 import java.sql.Connection;
 
 // LOGIC: 80%
-// TODO: Check the type of input queries
-// TODO: Figure out conditions for condition vector
-// TODO: Handle average function
-// TODO: Handle count aggregate function
+// TODO: Check the type of input queries, mf vs emf
 // TODO: Take input interactively and through file
-// TODO: Handle Having Condition
 
 // Styling: 20%
 // TODO: Header Comment (Overall comments about the project) - 10 points

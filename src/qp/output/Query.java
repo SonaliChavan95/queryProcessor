@@ -2,6 +2,7 @@ package qp.output;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.sql.Connection;
 
@@ -38,7 +39,7 @@ public class Query {
 
 			rs = st.executeQuery(queryStr);
 			while(rs.next()) {
-				if(rs.getString("state").equals("NY")) {
+				if(rs.getString("state").equals("NY") && rs.getInt("quant") < 100) {
 					cust = rs.getString("cust");
 					prod = rs.getString("prod");
 					for(MfStruct row: mfStruct) {
@@ -86,9 +87,17 @@ public class Query {
 				}
 			}
 
-			for(MfStruct row: mfStruct) {
+			Iterator<MfStruct> itr = mfStruct.iterator();
+			while (itr.hasNext()) {
+				MfStruct row = itr.next();
+				//Calculate Average
 				row.avg_1_quant = row.count_1_quant > 0 ? row.sum_1_quant / row.count_1_quant : 0;
 				row.avg_3_quant = row.count_3_quant > 0 ? row.sum_3_quant / row.count_3_quant : 0;
+
+				//Apply Having Condition
+				if (row.sum_1_quant > 2 * row.min_2_quant || row.avg_1_quant > row.avg_3_quant) {
+					itr.remove();
+				}
 			}
 
 			//Scan mf struct and print out the results

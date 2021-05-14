@@ -161,11 +161,6 @@ public class CodeGenerator {
 		mfStruct += String.join(", ", constructorArgs) + ") {\n";
 		mfStruct += constrVarAssignment;
 
-//		// Override toString()
-//		mfStruct += "\t}\n\n\tpublic String toString() { \n\t\t return (\n\t\t\t";
-//
-//		mfStruct += String.join(" + \"\\t\"+ ", printVars);
-//		 "\n\t\t);\n\t}"
 		mfStruct += "\t}\n}\n";
 
 		return mfStruct;
@@ -176,6 +171,7 @@ public class CodeGenerator {
 				+ "import java.sql.*;\n"
 				+ "import java.util.ArrayList;\n"
 				+ "import java.util.HashSet;\n"
+				+ "import java.util.Iterator;\n"
 				+ "import java.util.Set;\n"
 				+ "import java.sql.Connection;\n\n";
 
@@ -216,74 +212,6 @@ public class CodeGenerator {
 
 		// write to file "/Output/FinalQuery.java"
 		return code;
-	}
-
-	String generateMfStruct(InputQuery input_query, HashMap<String, String> infoSchema) {
-		// input_query.V; - GA
-		// input_query.F; - FV
-
-		String mfStruct = "\n// MFStruct created using Grouping Attributes and F vectors \n"
-				+ "package qp.output;\n\n"
-				+ "class MfStruct { \n";
-
-		// Add Grouping attributes in
-		for (String var : input_query.V) {
-			if (infoSchema.containsKey(var)) {
-				mfStruct += "\t" + infoSchema.get(var) + " " + var + ";\n";
-			}
-		}
-
-		// Add F vectors
-		for (String var : input_query.F) {
-			mfStruct += "\tint " + var + ";\n";
-		}
-
-		// Create a Constructor
-		// MfStruct(String cust, String prod) {
-		// this.cust = cust;
-		// this.prod = prod;
-		// this.sum_1_quant = 0;
-		// this.sum_2_quant = 0;
-		// }
-		mfStruct += "\n\tMfStruct(";
-
-		// For Construtor variable assignment
-		String constructorArgs[] = new String[input_query.V.size()];
-		String constrVarAssignment = "";
-
-		// For toString()
-		String[] printVars = new String[input_query.S.size()];
-
-		int i = 0;
-
-		for (String var : input_query.V) {
-			constructorArgs[i++] = infoSchema.get(var) + " " + var;
-
-			constrVarAssignment += "\t\t" + "this." + var + " = " + var + ";\n";
-		}
-
-		for (String var : input_query.F) {
-			if (var.contains("min")) {
-				constrVarAssignment += "\t\t" + "this." + var + " = Integer.MAX_VALUE;\n";
-			}
-		}
-
-		i = 0;
-		for (String var : input_query.S) {
-			printVars[i++] = "this." + var;
-		}
-
-		mfStruct += String.join(", ", constructorArgs) + ") {\n";
-		mfStruct += constrVarAssignment;
-
-//		// Override toString()
-//		mfStruct += "\t}\n\n\tpublic String toString() { \n\t\t return (\n\t\t\t";
-//
-//		mfStruct += String.join(" + \"\\t\"+ ", printVars);
-//		 "\n\t\t);\n\t}"
-		mfStruct += "\t}\n}\n";
-
-		return mfStruct;
 	}
 
 	String captalizeFirstLetter(String str) {
@@ -334,6 +262,56 @@ public class CodeGenerator {
 		return groupingAttrCode;
 	}
 
+	
+	// rs.getString("cust");
+	String abc(String column) {
+		if (infoSchema.containsKey(column)) {
+			return "rs.get" + captalizeFirstLetter(infoSchema.get(column)) + "(\"" + column + "\")";
+		}
+		return null;
+	}
+	
+	String createCondition(String var, int gv) {
+		String[] arr = var.split(" ");
+		String condi, gvCondition = "", operationOnGV = "";
+	    String[] arr2;
+	    for (String c1 : arr) {
+	      switch (c1) {
+	      case "and":
+	    	  gvCondition += " && ";
+	        break;
+	      case "or":
+	    	  gvCondition += " || ";
+	        break;
+	      default:
+	        condi = c1.replace(gv + ".", "");
+	        if(condi.contains("<=")) {
+	        	arr = condi.split("<=");
+	        	gvCondition += abc(arr[0]) + " <= " + arr[1];
+	        } else if(condi.contains(">=")) {
+	        	arr = condi.split(">=");
+	        	gvCondition += abc(arr[0]) + " >= " + arr[1];
+	        } else if(condi.contains("!=")) {
+	        	arr = condi.split("!=");
+	        	gvCondition += abc(arr[0]) + " <= " + arr[1];
+	        } else if(condi.contains("<>")) {
+	        	arr = condi.split("<>");
+	        	gvCondition += abc(arr[0]) + " <> " + arr[1];
+	        } else if (condi.contains("=")) {
+	        	arr = condi.split("=");
+	        	gvCondition += "rs.getString(\"" + arr[0] + "\").equals(" + arr[1] + ")";
+	        } else if (condi.contains("<")){
+	        	arr = condi.split("<");
+	        	gvCondition += abc(arr[0]) + " < " + arr[1];
+	        } else if (condi.contains(">")){
+	        	arr = condi.split(">");
+	        	gvCondition += abc(arr[0]) + " > " + arr[1];
+	        }
+	      }
+	    }
+	    return gvCondition;
+	}
+
 	// run loop on selected aggregate functions
 	String performOpOnGV() {
 		// "\n// STEP 1: Perform operations on grouping variable\n";
@@ -347,35 +325,8 @@ public class CodeGenerator {
 				if (var.startsWith("" + i)) {
 					// Parse condition vector for nth grouping variable
 					// 1.state='NY' and 1.quant>30
-					String[] arr = var.split(" ");
-					for (String c1 : arr) {
-						switch (c1) {
-						case "and":
 
-//							operationOnGV += " && ";
-							break;
-						case "or":
-//							operationOnGV += " || ";
-							break;
-						default:
-							condi = c1.replace(i + ".", "");
-//							if(condi.contains("<=")) {
-//
-//							}
-//							if(condi.contains(">=")) {
-//
-//							}
-//							if(condi.contains("!=") || condi.contains("<>")) {
-//
-//							}
-							String[] arr2 = condi.split("=");
-							if (condi.contains("=")) {
-								arr2 = condi.split("=");
-								gvCondition = "rs.getString(\"" + arr2[0] + "\").equals(" + arr2[1] + ")";
-							}
-						}
-					}
-
+					gvCondition = createCondition(var, i);
 					// Add Grouping attributes in
 
 					operationOnGV += "\t\t\t\t" + "if(" + gvCondition + ") {\n";
@@ -399,6 +350,7 @@ public class CodeGenerator {
 
 					operationOnGV += "\t\t\t\t\t\t" + "if" + condi2 + "{\n";
 
+					String[] arr;
 					for (String var2 : input_query.F) {
 
 						if (var2.contains(i + "")) {
@@ -437,8 +389,40 @@ public class CodeGenerator {
 		}
 
 		// Calculate avg
-		operationOnGV += "\n\t\t\tfor(MfStruct row: mfStruct) {\n\t\t\t";
+		operationOnGV += "\n\t\t\tIterator<MfStruct> itr = mfStruct.iterator();\n"
+				+ "\t\t\twhile (itr.hasNext()) {\n"
+				+ "\t\t\t\tMfStruct row = itr.next();\n\t\t\t\t"
+				+ "//Calculate Average\n\t\t\t";
 		operationOnGV += avgs.toString();
+		
+		operationOnGV += "\n\t\t\t\t//Apply Having Condition"
+				+ "\n\t\t\t\tif (";
+//		operationOnGV += "false";
+		
+//		sum_1_quant > 2 * min_2_quant or avg_1_quant > avg_3_quant
+		
+		StringJoiner ans = new StringJoiner(" ");
+		String[] hc = input_query.G.split(" ");
+		for(String con: hc) {
+			if(input_query.F.contains(con)) {
+				ans.add("row." + con);
+			} else if(con.equals("and")) {
+				ans.add("&&");
+			} else if(con.equals("or")) {
+				ans.add("||");
+			} else {
+				ans.add(con);
+			}
+		}
+		
+		
+		operationOnGV += ans.toString();
+		
+		
+//		row.sum_1_quant > 2 * row.min_2_quant || row.avg_1_quant > row.avg_3_quant
+		operationOnGV += ") {\n"
+				+ "\t\t\t\t\titr.remove();\n"
+				+ "\t\t\t\t}\n";
 		operationOnGV += "\t\t\t}\n";
 		return operationOnGV;
 	}
