@@ -226,55 +226,6 @@ public class CodeGenerator {
 		return mfStruct;
 	}
 
-	public String generateCode() {
-		InputQuery input_query = this.input_query;
-		HashMap<String, String> infoSchema = this.infoSchema;
-
-		String importCommands = "package qp.output;\n"
-				+ "import java.sql.*;\n"
-				+ "import java.util.ArrayList;\n"
-				+ "import java.util.HashSet;\n"
-				+ "import java.util.Set;\n"
-				+ "import java.sql.Connection;\n\n";
-
-		// Generate MFStruct class
-
-
-		String generatedCodeClass = "public class Query {\n";
-		String dbConnectionObj = "\tstatic Connection conn;\n";
-
-		// array of MFStruct objects
-		String mfStructObj = "\tstatic ArrayList<MfStruct> mfStruct = new ArrayList<MfStruct>();\n";
-
-		String startQuery = "\tpublic static void main(String[] args) {\n"
-				+ "\t\ttry {\n"
-				+ "\t\t\tSystem.out.println(\"----Generated Code-----\");\n"
-				+ "\t\t\tConnectDB newConnection = new ConnectDB();\n"
-				+ "\t\t\tconn = newConnection.getConnection();\n"
-				+ "\t\t\tString queryStr = \"SELECT * FROM sales\";\n"
-				+ "\t\t\tStatement st = conn.createStatement();\n"
-				+ "\t\t\tResultSet rs;\n";
-
-		String firstScan = populateGroupingAttributes(input_query, infoSchema);
-
-		String furtherScans = performOpOnGV(input_query, infoSchema);
-
-		String printOutput = generatePrintOutput(input_query);
-
-		String endCode = "\n"
-				+ "\t\t\t"
-				+ "conn.close();\n"
-				+ "\t\t} catch(Exception e) {\n\n"
-				+ "\t\t}\n"
-				+ "\t}\n}";
-
-		String code = importCommands + generatedCodeClass + dbConnectionObj + mfStructObj + startQuery
-				+ firstScan + furtherScans + printOutput + endCode;
-
-		// write to file "/Output/FinalQuery.java"
-		return code;
-	}
-
 	String captalizeFirstLetter(String str) {
 		return str.substring(0, 1).toUpperCase() + str.substring(1);
 	}
