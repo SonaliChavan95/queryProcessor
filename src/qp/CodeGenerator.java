@@ -426,32 +426,32 @@ public class CodeGenerator {
   }
 
   String generatePrintOutput() {
-    String selectAttrs = "";
-    String separator = "";
-    String output = "";
-    String values = "";
+	StringBuilder selectAttrs = new StringBuilder();
+	StringBuilder separator = new StringBuilder();
+    StringBuilder attrValues = new StringBuilder();
+	StringBuilder printOutput = new StringBuilder();
+	StringBuilder printZero = new StringBuilder();
 
     // Table Header
     for (String var : inputQuery.S) {
       String attr = "";
       if (var.equals("cust")) {
         attr = "\"%-10s\",\"Customer\"";
-        separator += "========= ";
+        separator.append("========= ");
       } else if (var.equals("prod")) {
         attr = "\"%-10s\",\"Product\"";
-        separator += "========= ";
+        separator.append("========= ");
       } else {
         attr = "\"%-12s\",\"" + var + "  \"";
-        separator += "============ ";
+        separator.append("============ ");
       }
-      selectAttrs += "\t\t\tSystem.out.printf("+attr+");\n";
+      selectAttrs.append("\t\t\tSystem.out.printf("+attr+");\n");
     }
+    
+    printOutput.append("\n\t\t\t" + "//Scan mf struct and print out the results\n");
+    printOutput.append(selectAttrs);
+    printOutput.append("\t\t\tSystem.out.println(\""+"\\n"+ separator +"\");\n\n");
 
-    output += "\n\t\t\t" + "//Scan mf struct and print out the results\n";
-    output += selectAttrs
-        + "\t\t\tSystem.out.println(\""+"\\n"+ separator +"\");\n\n";
-
-    String printZero = "";
     // Table Rows
     for (String var : inputQuery.S) {
       String value = "";
@@ -460,27 +460,30 @@ public class CodeGenerator {
       } else if (var.equals("prod")) {
         value = "\"%-10s\", row."+ var;
       } else if (var.contains("min")) {
-        value = "\"%12s\", printMin";
-        printZero += "\t\t\t\t"
-            + "int printMin = row."+ var +";\n"
-            + "\t\t\t\t"
-            + "if (printMin == Integer.MAX_VALUE) {\n"
-            + "\t\t\t\t\t"
-            + "printMin = 0;\n"
-            + "\t\t\t\t"
-            + "}\n";
-      }else {
+    	String varName = "print_"+var;
+        value = "\"%12s\", "+varName;
+        
+        // check for min value, if record value not present for selected group, print 0
+        printZero.append("\n\t\t\t\t");
+        printZero.append("int "+varName+ " = row."+ var +";\n");
+        printZero.append("\t\t\t\t");
+        printZero.append("if ("+ varName +" == Integer.MAX_VALUE) {\n");
+        printZero.append("\t\t\t\t\t");
+        printZero.append(varName + "= 0;\n");
+        printZero.append("\t\t\t\t");
+        printZero.append("}\n");
+      } else {
         value = "\"%12s\", row."+ var;
       }
-      values += "\t\t\t\tSystem.out.printf("+value+");\n";
+      attrValues.append("\t\t\t\tSystem.out.printf("+value+");\n");
     }
 
-    output += "\t\t\t"
-         + "for(MfStruct row: mfStruct) {\n"
-         + printZero
-         + values
-         + "\t\t\t\tSystem.out.print('\\n');\n"
-         + "\t\t\t" + "}\n";
-    return output;
+    printOutput.append("\t\t\tfor(MfStruct row: mfStruct) {\n");
+    printOutput.append(printZero);
+    printOutput.append(attrValues);
+    printOutput.append("\t\t\t\tSystem.out.print('\\n');\n");
+    printOutput.append("\t\t\t" + "}\n");
+    
+    return printOutput.toString();
   }
 }
