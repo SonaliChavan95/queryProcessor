@@ -43,7 +43,6 @@ public class Query {
 						if(row.cust.equals(cust)){
 							row.count_1_quant++;
 							row.sum_1_quant += rs.getInt("quant");
-							
 
 						}
 					}
@@ -56,22 +55,7 @@ public class Query {
 					cust = rs.getString("cust");
 					for(MfStruct row: mfStruct) {
 						if(row.cust.equals(cust) && row.cust.equals(cust)){
-							row.count_2++;
-
-						}
-					}
-				}
-			}
-
-			rs = st.executeQuery(queryStr);
-			while(rs.next()) {
-				if(rs.getString("state").equals("CT")) {
-					cust = rs.getString("cust");
-					for(MfStruct row: mfStruct) {
-						if(row.cust.equals(cust) && row.cust.equals(cust) && row.cust.equals(cust)){
-							row.count_3_quant++;
-							
-							row.sum_3_quant += rs.getInt("quant");
+							row.sum_2_quant += rs.getInt("quant");
 
 						}
 					}
@@ -82,11 +66,9 @@ public class Query {
 			while (itr.hasNext()) {
 				MfStruct row = itr.next();
 				//Calculate Average
-				row.avg_1_quant = row.count_1_quant > 0 ? row.sum_1_quant / row.count_1_quant : 0;
-				row.avg_3_quant = row.count_3_quant > 0 ? row.sum_3_quant / row.count_3_quant : 0;
-
+			
 				//Apply Having Condition
-				if (row.sum_1_quant > 2 * row.count_2 || row.avg_1_quant > row.avg_3_quant) {
+				if (!(row.sum_1_quant > 0.1 * row.sum_2_quant)) {
 					itr.remove();
 				}
 			}
@@ -94,15 +76,15 @@ public class Query {
 			//Scan mf struct and print out the results
 			System.out.printf("%-10s","Customer");
 			System.out.printf("%-12s","sum_1_quant  ");
-			System.out.printf("%-12s","count_2_quant  ");
-			System.out.printf("%-12s","sum_3_quant  ");
+			System.out.printf("%-12s","sum_2_quant  ");
+			System.out.printf("%-12s","count_1_quant  ");
 			System.out.println("\n========= ============ ============ ============ ");
 
 			for(MfStruct row: mfStruct) {
 				System.out.printf("%-10s", row.cust);
 				System.out.printf("%12s", row.sum_1_quant);
-				System.out.printf("%12s", row.count_2_quant);
-				System.out.printf("%12s", row.sum_3_quant);
+				System.out.printf("%12s", row.sum_2_quant);
+				System.out.printf("%12s", row.count_1_quant);
 				System.out.print('\n');
 			}
 

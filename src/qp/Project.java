@@ -36,7 +36,7 @@ public class Project {
 	  */
 	public static void main(String[] args) {
 		try {
-			String inputFile = "./sample_queries/query2.txt";
+			String inputFile = "./sample_queries/query1.txt";
 			System.out.println("Reading "+ inputFile);
 
 			// Read the input query

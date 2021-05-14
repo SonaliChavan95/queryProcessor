@@ -405,13 +405,13 @@ public class CodeGenerator {
 
 		// Calculate avg
 		operationOnGV.append("\n\t\t\tIterator<MfStruct> itr = mfStruct.iterator();\n");
-	  operationOnGV.append("\t\t\twhile (itr.hasNext()) {\n");
-	  operationOnGV.append("\t\t\t\tMfStruct row = itr.next();\n\t\t\t\t");
-	  operationOnGV.append("//Calculate Average\n\t\t\t");
+		operationOnGV.append("\t\t\twhile (itr.hasNext()) {\n");
+		operationOnGV.append("\t\t\t\tMfStruct row = itr.next();\n\t\t\t\t");
+		operationOnGV.append("//Calculate Average\n\t\t\t");
 		operationOnGV.append(avgs.toString());
 
 		operationOnGV.append("\n\t\t\t\t//Apply Having Condition");
-	  operationOnGV.append("\n\t\t\t\tif (");
+		operationOnGV.append("\n\t\t\t\tif (!(");
 		// operationOnGV += "false";
 
 		// sum_1_quant > 2 * min_2_quant or avg_1_quant > avg_3_quant
@@ -433,7 +433,7 @@ public class CodeGenerator {
 		operationOnGV.append(ans.toString());
 
 		// row.sum_1_quant > 2 * row.min_2_quant || row.avg_1_quant > row.avg_3_quant
-		operationOnGV.append(") {\n");
+		operationOnGV.append(")) {\n");
 		operationOnGV.append("\t\t\t\t\titr.remove();\n");
 		operationOnGV.append("\t\t\t\t}\n");
 		operationOnGV.append("\t\t\t}\n");
