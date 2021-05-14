@@ -1,11 +1,13 @@
 package qp;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.StringJoiner;
 
 public class CodeGenerator {
   static private InputQuery inputQuery;
   static private HashMap<String, String> infoSchema;
+  static private Map<String, String> aggregateFunctions = new HashMap<String, String>();
 
   public CodeGenerator(InputQuery inputQuery, HashMap<String, String> infoSchema) {
     CodeGenerator.inputQuery = inputQuery;
@@ -123,7 +125,11 @@ public class CodeGenerator {
     }
     // Add F vectors
     for (String var : inputQuery.F) {
-      classVars.add("\tint " + var);
+    	if(var.startsWith("avg")) {
+    		classVars.add("\tdouble " + var);
+    	} else {
+    		classVars.add("\tint " + var);
+    	}
     }
 
     /**
@@ -132,8 +138,8 @@ public class CodeGenerator {
     * MfStruct(String cust, String prod) {
     *   this.cust = cust;
     *   this.prod = prod;
-    *    this.sum_1_quant = 0;
-    *    this.sum_2_quant = 0; }
+    *   this.sum_1_quant = 0;
+    *   this.sum_2_quant = 0; }
     * ----------------------------------------
     */
 
@@ -191,6 +197,7 @@ public class CodeGenerator {
         + "\t\t\tStatement st = conn.createStatement();\n"
         + "\t\t\tResultSet rs;\n";
 
+    generateAggregateFunctions();
     String firstScan = populateGroupingAttributes();
 
     String furtherScans = performOpOnGV();
@@ -220,6 +227,7 @@ public class CodeGenerator {
     StringBuilder generateStep1 = new StringBuilder();
     StringJoiner buildUniqKey = new StringJoiner(" + ", "(", ")");
     StringBuilder fetchGroupingAttr = new StringBuilder();
+    StringJoiner conditions = new StringJoiner(" && ", "(", ")");
 
     generateStep1.append("\t\t\t// STEP 1: Populate Grouping attributes\n");
     generateStep1.append("\t\t\tSystem.out.println(\"----STEP 1: Perform 0th Scan-------\");\n");
@@ -253,8 +261,31 @@ public class CodeGenerator {
     generateStep1.append(buildUniqKey.toString().replace("+", ","));
     generateStep1.append(";\n\t\t\t\t\t");
     generateStep1.append("mfStruct.add(newRow);\n\t\t\t\t");
-    generateStep1.append("}\n\t\t\t}\n");
+    generateStep1.append("}\n\t\t\t");
 
+    // TODO
+
+//    for(MfStruct row: mfStruct) {
+//						if(row.cust.equals(cust)){
+//							row.sum_0_quant += rs.getInt("quant");
+//							row.count_0_quant++;
+//
+//						}
+//					}
+
+    for (String groupingAttribute : inputQuery.V) {
+      conditions.add("row." + groupingAttribute + ".equals(" + groupingAttribute + ")");
+    }
+
+    generateStep1.append("\t\t\t\t\tfor(MfStruct row: mfStruct) {\n");
+    generateStep1.append("\t\t\t\t\t\tif");
+    generateStep1.append(conditions);
+    generateStep1.append("{\n");
+
+    // aggregateFunctions = generateAggregateFunctions(i);
+    generateStep1.append(aggregateFunctions.get("0"));
+
+    generateStep1.append("}\n}\n}\n");
     return generateStep1.toString();
   }
 
@@ -322,12 +353,58 @@ public class CodeGenerator {
     return gvCondition.toString();
   }
 
+  void generateAggregateFunctions() {
+    // String[] aggregateFunctions = new String[2];
+    StringJoiner avgs = new StringJoiner("\t\t\t");;
+    StringBuilder aggregates;
+    String[] arr;
+
+    for(int i = 0; i <= inputQuery.n; i++) {
+
+      aggregates =  new StringBuilder();
+      for (String fVector : inputQuery.F) {
+        if (fVector.contains(i + "")) {
+          arr = fVector.split("_");
+          aggregates.append("\t\t\t\t\t\t\t");
+
+          switch (arr[0]) {
+          case "sum":
+            aggregates.append("row." + fVector + " += " + rsGetColumnValue(arr[2]) + ";");
+            break;
+          case "avg":
+            avgs.add("\trow." + fVector + " = "
+              + "row." + fVector.replace("avg", "count") + " > 0 ? (double)"
+              + "row." + fVector.replace("avg", "sum") + " / "
+              + "row." + fVector.replace("avg", "count") + " : 0;\n"
+            );
+            break;
+          case "min":
+            aggregates.append("row." + fVector + " = Math.min(row." + fVector + ", " + rsGetColumnValue(arr[2]) + ");");
+            break;
+          case "max":
+            aggregates.append("row." + fVector + " = Math.max(row." + fVector + ", " + rsGetColumnValue(arr[2]) + ");");
+            break;
+          case "count":
+            aggregates.append("row." + fVector + "++;");
+          }
+          aggregates.append("\n");
+        }
+      }
+
+      aggregateFunctions.put(i + "", aggregates.toString());
+
+    }
+
+    aggregateFunctions.put("avgs", avgs.toString());
+    // return aggregateFunctions;
+  }
+
   // run loop on selected aggregate functions
   String performOpOnGV() {
     StringBuilder operationOnGV = new StringBuilder();
     // STEP 1: Perform operations on grouping variable\n";
-    StringJoiner avgs = new StringJoiner("\t\t\t");
     StringJoiner conditions = new StringJoiner(" && ", "(", ")");
+//    String[] aggregateFunctions = new String[2];
 
     for (int i = 1; i <= inputQuery.n; i++) {
       operationOnGV.append("\n\t\t\trs = st.executeQuery(queryStr);\n");
@@ -358,35 +435,8 @@ public class CodeGenerator {
           operationOnGV.append(conditions);
           operationOnGV.append("{\n");
 
-          String[] arr;
-          for (String fVector : inputQuery.F) {
-            if (fVector.contains(i + "")) {
-              arr = fVector.split("_");
-              operationOnGV.append("\t\t\t\t\t\t\t");
-
-              switch (arr[0]) {
-              case "sum":
-                operationOnGV.append("row." + fVector + " += " + rsGetColumnValue(arr[2]) + ";");
-                break;
-              case "avg":
-                avgs.add("\trow." + fVector + " = "
-                  + "row." + fVector.replace("avg", "count") + " > 0 ? "
-                  + "row." + fVector.replace("avg", "sum") + " / "
-                  + "row." + fVector.replace("avg", "count") + " : 0;\n"
-                );
-                break;
-              case "min":
-                operationOnGV.append("row." + fVector + " = Math.min(row." + fVector + ", " + rsGetColumnValue(arr[2]) + ");");
-                break;
-              case "max":
-                operationOnGV.append("row." + fVector + " = Math.max(row." + fVector + ", " + rsGetColumnValue(arr[2]) + ");");
-                break;
-              case "count":
-                operationOnGV.append("row." + fVector + "++;");
-              }
-              operationOnGV.append("\n");
-            }
-          }
+          // aggregateFunctions = generateAggregateFunctions(i);
+          operationOnGV.append(aggregateFunctions.get(i + ""));
 
           operationOnGV.append("\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n");
         }
@@ -398,7 +448,7 @@ public class CodeGenerator {
     operationOnGV.append("\t\t\twhile (itr.hasNext()) {\n");
     operationOnGV.append("\t\t\t\tMfStruct row = itr.next();\n\t\t\t\t");
     operationOnGV.append("//Calculate Average\n\t\t\t");
-    operationOnGV.append(avgs.toString());
+    operationOnGV.append(aggregateFunctions.get("avgs"));
     operationOnGV.append("\n\t\t\t\t//Apply Having Condition");
     operationOnGV.append("\n\t\t\t\tif (!(");
 
