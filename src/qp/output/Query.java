@@ -89,7 +89,6 @@ public class Query {
 			for(MfStruct row: mfStruct) {
 				row.avg_1_quant = row.count_1_quant > 0 ? row.sum_1_quant / row.count_1_quant : 0;
 				row.avg_3_quant = row.count_3_quant > 0 ? row.sum_3_quant / row.count_3_quant : 0;
-				
 			}
 
 			//Scan mf struct and print out the results
@@ -100,19 +99,25 @@ public class Query {
 			System.out.printf("%-12s","min_2_quant  ");
 			System.out.printf("%-12s","max_2_quant  ");
 			System.out.printf("%-12s","count_2_quant  ");
+			System.out.printf("%-12s","count_3_quant  ");
 			System.out.printf("%-12s","sum_3_quant  ");
 			System.out.printf("%-12s","max_3_quant  ");
 			System.out.printf("%-12s","avg_3_quant  ");
-			System.out.println("\n========= ========= ============ ============ ============ ============ ============ ============ ============ ============ ");
+			System.out.println("\n========= ========= ============ ============ ============ ============ ============ ============ ============ ============ ============ ");
 
 			for(MfStruct row: mfStruct) {
+				int printMin = row.min_2_quant;
+				if (printMin == Integer.MAX_VALUE) {
+					printMin = 0;
+				}
 				System.out.printf("%-10s", row.cust);
 				System.out.printf("%-10s", row.prod);
 				System.out.printf("%12s", row.sum_1_quant);
 				System.out.printf("%12s", row.sum_2_quant);
-				System.out.printf("%12s", row.min_2_quant);
+				System.out.printf("%12s", printMin);
 				System.out.printf("%12s", row.max_2_quant);
 				System.out.printf("%12s", row.count_2_quant);
+				System.out.printf("%12s", row.count_3_quant);
 				System.out.printf("%12s", row.sum_3_quant);
 				System.out.printf("%12s", row.max_3_quant);
 				System.out.printf("%12s", row.avg_3_quant);
@@ -122,6 +127,7 @@ public class Query {
 			conn.close();
 		} catch(Exception e) {
 
+		e.printStackTrace();
 		}
 	}
 }
