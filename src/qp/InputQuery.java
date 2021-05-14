@@ -6,6 +6,7 @@ package qp;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Scanner;
 
 public class InputQuery {
@@ -17,7 +18,7 @@ public class InputQuery {
 	// Grouping Attributes
 	public ArrayList<String> V;
 	// F Vector
-	public ArrayList<String> F;
+	public HashSet<String> F;
 	// Select condition Vector
 	public ArrayList<String> CV;
 	// Having Condition
@@ -27,7 +28,7 @@ public class InputQuery {
 	InputQuery() {
 		this.S = new ArrayList<String>();
 		this.V = new ArrayList<String>();
-		this.F = new ArrayList<String>();
+		this.F = new HashSet<String>();
 		this.CV = new ArrayList<String>();
 		this.G = new String();
 		this.n = 0;
@@ -81,8 +82,13 @@ public class InputQuery {
 						if(myReader.hasNextLine()) {
 							input = myReader.nextLine();
 							String arr[] = input.split("[,]");
-							for(String i : arr)
+							for(String i : arr) {
+								if(i.contains("avg")) {
+									this.F.add(i.trim().replace("avg", "sum"));
+									this.F.add(i.trim().replace("avg", "count"));
+								}
 								this.F.add(i.trim());
+							}
 						}
 						break;
 					case "SELECT CONDITION-VECT([σ]):":

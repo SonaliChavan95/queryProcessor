@@ -105,27 +105,79 @@ public class CodeGenerator {
 	}
 
 	public String generateMfStructClass() {
-		// input_query.V; // GA
-		// input_query.F; // FV
+		String mfStructClass = generateMfStruct(this.input_query, this.infoSchema);
+		return mfStructClass;
+	}
+
+	public String generateCode() {
 		InputQuery input_query = this.input_query;
 		HashMap<String, String> infoSchema = this.infoSchema;
+
+		String importCommands = "package qp.output;\n"
+				+ "import java.sql.*;\n"
+				+ "import java.util.ArrayList;\n"
+				+ "import java.util.HashSet;\n"
+				+ "import java.util.Set;\n"
+				+ "import java.sql.Connection;\n\n";
+
+		// Generate MFStruct class
+
+
+		String generatedCodeClass = "public class Query {\n";
+		String dbConnectionObj = "\tstatic Connection conn;\n";
+
+		// array of MFStruct objects
+		String mfStructObj = "\tstatic ArrayList<MfStruct> mfStruct = new ArrayList<MfStruct>();\n";
+
+		String startQuery = "\tpublic static void main(String[] args) {\n"
+				+ "\t\ttry {\n"
+				+ "\t\t\tSystem.out.println(\"----Generated Code-----\");\n"
+				+ "\t\t\tConnectDB newConnection = new ConnectDB();\n"
+				+ "\t\t\tconn = newConnection.getConnection();\n"
+				+ "\t\t\tString queryStr = \"SELECT * FROM sales\";\n"
+				+ "\t\t\tStatement st = conn.createStatement();\n"
+				+ "\t\t\tResultSet rs;\n";
+
+		String firstScan = populateGroupingAttributes(input_query, infoSchema);
+
+		String furtherScans = performOpOnGV(input_query, infoSchema);
+
+		String printOutput = generatePrintOutput(input_query);
+
+		String endCode = "\n"
+				+ "\t\t\t"
+				+ "conn.close();\n"
+				+ "\t\t} catch(Exception e) {\n\n"
+				+ "\t\t}\n"
+				+ "\t}\n}";
+
+		String code = importCommands + generatedCodeClass + dbConnectionObj + mfStructObj + startQuery
+				+ firstScan + furtherScans + printOutput + endCode;
+
+		// write to file "/Output/FinalQuery.java"
+		return code;
+	}
+
+	String generateMfStruct(InputQuery input_query, HashMap<String, String> infoSchema) {
+		// input_query.V; - GA
+		// input_query.F; - FV
 
 		String mfStruct = "\n// MFStruct created using Grouping Attributes and F vectors \n"
 				+ "package qp.output;\n\n"
 				+ "class MfStruct { \n";
-	
+
 		// Add Grouping attributes in
 		for (String var : input_query.V) {
 			if (infoSchema.containsKey(var)) {
-				mfStruct += "\t" + infoSchema.get(var) + " " + var + "; \n";
+				mfStruct += "\t" + infoSchema.get(var) + " " + var + ";\n";
 			}
 		}
-	
+
 		// Add F vectors
 		for (String var : input_query.F) {
-			mfStruct += "\tint " + var + "; \n";
+			mfStruct += "\tint " + var + ";\n";
 		}
-	
+
 		// Create a Constructor
 		// MfStruct(String cust, String prod) {
 		// this.cust = cust;
@@ -134,43 +186,43 @@ public class CodeGenerator {
 		// this.sum_2_quant = 0;
 		// }
 		mfStruct += "\n\tMfStruct(";
-	
+
 		// For Construtor variable assignment
 		String constructorArgs[] = new String[input_query.V.size()];
 		String constrVarAssignment = "";
-	
+
 		// For toString()
 		String[] printVars = new String[input_query.S.size()];
-	
+
 		int i = 0;
-	
+
 		for (String var : input_query.V) {
 			constructorArgs[i++] = infoSchema.get(var) + " " + var;
-	
+
 			constrVarAssignment += "\t\t" + "this." + var + " = " + var + ";\n";
 		}
-	
+
 		for (String var : input_query.F) {
 			if (var.contains("min")) {
 				constrVarAssignment += "\t\t" + "this." + var + " = Integer.MAX_VALUE;\n";
 			}
 		}
-	
+
 		i = 0;
 		for (String var : input_query.S) {
 			printVars[i++] = "this." + var;
 		}
-	
+
 		mfStruct += String.join(", ", constructorArgs) + ") {\n";
 		mfStruct += constrVarAssignment;
-	
+
 //		// Override toString()
 //		mfStruct += "\t}\n\n\tpublic String toString() { \n\t\t return (\n\t\t\t";
-//	
+//
 //		mfStruct += String.join(" + \"\\t\"+ ", printVars);
 //		 "\n\t\t);\n\t}"
 		mfStruct += "\t}\n}\n";
-	
+
 		return mfStruct;
 	}
 
@@ -227,6 +279,7 @@ public class CodeGenerator {
 		return str.substring(0, 1).toUpperCase() + str.substring(1);
 	}
 
+	// STEP 1
 	String populateGroupingAttributes(InputQuery input_query, HashMap<String, String> infoSchema) {
 		String groupingAttrCode = "\t\t\t"
 				+ "// STEP 1: Populate Grouping attributes\n"
@@ -271,10 +324,11 @@ public class CodeGenerator {
 		return groupingAttrCode;
 	}
 
-	// run loop on selected aggregate functions
+	// STEP 2: run loop on selected aggregate functions
 	String performOpOnGV(InputQuery input_query, HashMap<String, String> infoSchema) {
 		// "\n// STEP 1: Perform operations on grouping variable\n";
 		String operationOnGV = "", condi = "", gvCondition = "";
+		StringJoiner avgs = new StringJoiner("\t\t\t");
 
 		for (int i = 1; i <= input_query.n; i++) {
 			operationOnGV += "\n\t\t\t" + "rs = st.executeQuery(queryStr);\n" + "\t\t\t" + "while(rs.next()) {\n";
@@ -346,7 +400,7 @@ public class CodeGenerator {
 								operationOnGV += "row." + var2 + " += rs.getInt(\"" + arr[2] + "\");";
 								break;
 							case "avg":
-
+								avgs.add("\trow." + var2 + " = " + "row." + var2.replace("avg", "count") + " > 0 ?" + " row." + var2.replace("avg", "sum") + " / " + "row." + var2.replace("avg", "count") + " : 0" + ";\n");
 								break;
 							case "min":
 								operationOnGV += "row." + var2 + " = Math.min(row." + var2 + ", rs.getInt(\"" + arr[2]
@@ -371,6 +425,11 @@ public class CodeGenerator {
 				}
 			}
 		}
+
+		// Calculate avg
+		operationOnGV += "\n\t\t\tfor(MfStruct row: mfStruct) {\n\t\t\t";
+		operationOnGV += avgs.toString();
+		operationOnGV += "\t\t\t}\n";
 		return operationOnGV;
 	}
 
@@ -411,7 +470,7 @@ public class CodeGenerator {
 			}
 			values += "\t\t\t\tSystem.out.printf("+value+");\n";
 		}
-		
+
 		output += "\t\t\t"
 			   + "for(MfStruct row: mfStruct) {\n"
 			   + values
