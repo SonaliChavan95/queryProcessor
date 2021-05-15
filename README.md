@@ -66,8 +66,10 @@ parts of generated code:
 * Select "postgresql.jar" file from unzipped folder
 * Click on "Apply and Close"
 * Change username password and database name at two places before running the project
-          1. qp.ConnectDB.java (at line number 18, 19, 20) 
-          2. qp.CodeGenerator.java (at line number 41, 42, 43)
+```          
+1. qp.ConnectDB.java (at line number 18, 19, 20) 
+2. qp.CodeGenerator.java (at line number 41, 42, 43)
+```
 * Select "Project.java" and Run the application.
 
 ## SEE sample_queries/* files for syntax
