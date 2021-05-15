@@ -1,111 +1,212 @@
 package qp;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
 
+
+/**
+ * This class is responsible for generating three classes,
+ * 1. MfStruct.java - through generateMfStructClass() function.
+ * 2. ConnectDB.java - through generateConnectDB() function.
+ * 3. Query.java - through generateMainCode() function.
+ * 
+ * Once these files are generated through this Class,
+ * Go to Query.java, and run the class to see the output on the console.
+ * 
+ */
 public class CodeGenerator {
   static private InputQuery inputQuery;
   static private HashMap<String, String> infoSchema;
   static private Map<String, String> aggregateFunctions = new HashMap<String, String>();
 
+  /*
+   * Constructor for this class, 
+   * Accepts argument 1 of InputQuery type and argument 2 as infoSchema of Hashmap type
+   * */
   public CodeGenerator(InputQuery inputQuery, HashMap<String, String> infoSchema) {
     CodeGenerator.inputQuery = inputQuery;
     CodeGenerator.infoSchema = infoSchema;
   }
 
+  /*
+   * This function generates a ConnectDB class that's responsible 
+   * for making connection with the database and perform MF/EMF operations
+   * For running it on your local, you can change the DB user-name and password and
+   * database name  below at line number 57, 58 and 59 respectively. 
+   * */
   public String generateConnectDB() {
     String connectDB = "/**\n"
-        + " *\n"
-        + " */\n"
-        + "package qp.output;\n"
-        + "\n"
-        + "import java.sql.Connection;\n"
-        + "import java.sql.DriverManager;\n"
-        + "import java.sql.ResultSet;\n"
-        + "import java.sql.SQLException;\n"
-        + "import java.sql.Statement;\n"
-        + "import java.util.HashMap;\n"
-        + "\n"
-        + "public class ConnectDB {\n"
-        + "	Connection connection;\n"
-        + "	public HashMap<String, String> infoSchema = new HashMap<String, String>();\n"
-        + "\n"
-        + "	ConnectDB() {\n"
-        + "		connection = null;\n"
-        + "	}\n"
-        + "\n"
-        + "	public Connection getConnection() {\n"
-        + "		// JDBC driver name and database URL\n"
-        + "		// final String JDBC_DRIVER = \"org.postgresql.Driver\";\n"
-        + "		String username = System.getenv(\"DB_USER\");\n"
-        + "		String pass = System.getenv(\"DB_PASS\");\n"
-        + "		String tableName = System.getenv(\"TABLE\");\n"
-        + "		\n"
-        + "		final String DB_URL = \"jdbc:postgresql://localhost:5432/\"+tableName;\n"
-        + "		\n"
-        + "		// Database credentials\n"
-        + "		final String USER = username;\n"
-        + "		final String PASS = pass;\n"
-        + "\n"
-        + "		try {\n"
-        + "\n"
-        + "			// Open a connection\n"
-        + "			System.out.println(\"Connecting to database....\");\n"
-        + "			connection = DriverManager.getConnection(DB_URL, USER, PASS);\n"
-        + "\n"
-        + "			if(connection != null) {\n"
-        + "				System.out.println(\"Successful DB connection\");\n"
-        + "			} else {\n"
-        + "				System.out.println(\"DB connection failed\");\n"
-        + "			}\n"
-        + "\n"
-        + "			setInfoSchema();\n"
-        + "\n"
-        + "		} catch(Exception e) {\n"
-        + "			e.printStackTrace();\n"
-        + "		}\n"
-        + "		return connection;\n"
-        + "	}\n"
-        + "\n"
-        + "	void setInfoSchema() {\n"
-        + "		String SQLQuery = \"SELECT column_name, data_type \"\n"
-        + "				+ \"FROM information_schema.columns \"\n"
-        + "				+ \"WHERE table_name = 'sales'\";\n"
-        + "\n"
-        + "		try {\n"
-        + "			Statement st = connection.createStatement();\n"
-        + "			ResultSet rs = st.executeQuery(SQLQuery);\n"
-        + "\n"
-        + "			String col, type;\n"
-        + "\n"
-        + "			while(rs.next()) {\n"
-        + "				col = rs.getString(\"column_name\");\n"
-        + "				type = columnDataType(rs.getString(\"data_type\"));\n"
-        + "				infoSchema.put(col, type);\n"
-        + "			}\n"
-        + "		}\n"
-        + "		catch (SQLException ex) {\n"
-        + "			ex.printStackTrace();\n"
-        + "		}\n"
-        + "	}\n"
-        + "\n"
-        + "	private String columnDataType(String type) {\n"
-        + "		switch(type) {\n"
-        + "		case \"character varying\":\n"
-        + "		case \"character\":\n"
-        + "			return \"String\";\n"
-        + "		case \"integer\":\n"
-        + "			return \"int\";\n"
-        + "		default:\n"
-        + "			return \"\";\n"
-        + "		}\n"
-        + "	}\n"
-        + "}\n"
-        + "";
+    		+ " * This class is responsible for making connection to the database\n"
+    		+ " * For the main Project.java, this file provides infoSchema regarding the \n"
+    		+ " * sales table\n"
+    		+ " */\n"
+    		+ "package qp.output;\n"
+    		+ "\n"
+    		+ "import java.sql.Connection;\n"
+    		+ "import java.sql.DriverManager;\n"
+    		+ "import java.sql.ResultSet;\n"
+    		+ "import java.sql.SQLException;\n"
+    		+ "import java.sql.Statement;\n"
+    		+ "import java.util.HashMap;\n"
+    		+ "\n"
+    		+ "public class ConnectDB {\n"
+    		+ "  Connection connection;\n"
+    		+ "  public HashMap<String, String> infoSchema = new HashMap<String, String>();\n"
+    		+ "  private final static String USER = \"abhinavgarg\";\n"
+    		+ "  private final static String PASS = \"hello123\";\n"
+    		+ "  private final static String DB_NAME = \"sales\";\n"
+    		+ "\n"
+    		+ "  ConnectDB() {\n"
+    		+ "    connection = null;\n"
+    		+ "  }\n"
+    		+ "\n"
+    		+ "  public Connection getConnection() {\n"
+    		+ "    // JDBC driver name and database     \n"
+    		+ "    final String DB_URL = \"jdbc:postgresql://localhost:5432/\"+DB_NAME;\n"
+    		+ "\n"
+    		+ "    try {\n"
+    		+ "\n"
+    		+ "      // Open a connection\n"
+    		+ "      System.out.println(\"Connecting to database....\");\n"
+    		+ "      connection = DriverManager.getConnection(DB_URL, USER, PASS);\n"
+    		+ "\n"
+    		+ "      if(connection != null) {\n"
+    		+ "        System.out.println(\"Successful DB connection\");\n"
+    		+ "      } else {\n"
+    		+ "        System.out.println(\"DB connection failed\");\n"
+    		+ "      }\n"
+    		+ "\n"
+    		+ "      setInfoSchema();\n"
+    		+ "\n"
+    		+ "    } catch(Exception e) {\n"
+    		+ "      e.printStackTrace();\n"
+    		+ "    }\n"
+    		+ "    return connection;\n"
+    		+ "  }\n"
+    		+ "\n"
+    		+ "  void setInfoSchema() {\n"
+    		+ "    String SQLQuery = \"SELECT column_name, data_type \"\n"
+    		+ "        + \"FROM information_schema.columns \"\n"
+    		+ "        + \"WHERE table_name = 'sales'\";\n"
+    		+ "\n"
+    		+ "    try {\n"
+    		+ "      Statement st = connection.createStatement();\n"
+    		+ "      ResultSet rs = st.executeQuery(SQLQuery);\n"
+    		+ "\n"
+    		+ "      String col, type;\n"
+    		+ "\n"
+    		+ "      while(rs.next()) {\n"
+    		+ "        col = rs.getString(\"column_name\");\n"
+    		+ "        type = columnDataType(rs.getString(\"data_type\"));\n"
+    		+ "        infoSchema.put(col, type);\n"
+    		+ "      }\n"
+    		+ "    }\n"
+    		+ "    catch (SQLException ex) {\n"
+    		+ "      ex.printStackTrace();\n"
+    		+ "    }\n"
+    		+ "  }\n"
+    		+ "\n"
+    		+ "  private String columnDataType(String type) {\n"
+    		+ "    switch(type) {\n"
+    		+ "    case \"character varying\":\n"
+    		+ "    case \"character\":\n"
+    		+ "      return \"String\";\n"
+    		+ "    case \"integer\":\n"
+    		+ "      return \"int\";\n"
+    		+ "    default:\n"
+    		+ "      return \"\";\n"
+    		+ "    }\n"
+    		+ "  }\n"
+    		+ "}\n"
+    		+ "";
     return connectDB;
   }
 
+  /**
+   * This function is the main function that generates the Query.java main class
+   * 
+   * MfStruct generates an object with all the necessary values. For average, it declares 
+   * it as a double, for all other integer related, int type and for others, String.
+   * */
+  public String generateMainCode() {
+	// Import necessary files and classes
+	String importCommands = "package qp.output;\n"			
+    // Import necessary files and classes
+        + "import java.sql.*;\n"
+        + "import java.util.ArrayList;\n"
+        + "import java.util.HashSet;\n"
+        + "import java.util.Iterator;\n"
+        + "import java.util.Set;\n"
+        + "import java.sql.Connection;\n\n";
+
+    // Generate Query class with main function and
+    String generatedCodeClass = "public class Query {\n";
+    String dbConnectionObj = "\tstatic Connection conn;\n";
+
+    // array of MFStruct objects
+    String mfStructObj = "\tstatic ArrayList<MfStruct> mfStruct = new ArrayList<MfStruct>();\n";
+
+    // declaring main function that calls ConnectDB class which was generated in one of the 
+    // above mentioned functions
+    String startQuery = "\tpublic static void main(String[] args) {\n"
+        + "\t\ttry {\n"
+        + "\t\t\tConnectDB newConnection = new ConnectDB();\n"
+        + "\t\t\tconn = newConnection.getConnection();\n"
+        + "\t\t\tString queryStr = \"SELECT * FROM sales\";\n"
+        + "\t\t\tStatement st = conn.createStatement();\n"
+        + "\t\t\tResultSet rs;\n";
+
+    // generate aggregate functions that we are going to use for calculating for 
+    // MF and EMF queries
+    generateAggregateFunctions();
+    
+    // Performing first scan, populate mf-structure list with grouping attributes
+    // values and setting default values for other attributes in mf-structure
+    String firstScan = populateGroupingAttributes();
+
+    // For each grouping variable, scan the table, and 
+    // update value into the mfStructure row after fulfilling condition 
+    // and making calculation depending upon the aggregate functions
+    String furtherScans = performOpOnGV();
+
+    // this function generates the Final loop that iterates over the mf-structure list 
+    // and prints out the output on the console
+    String printOutput = generatePrintOutput();
+
+    // Query class closing statements
+    String endCode = "\n"
+        + "\t\t\t"
+        + "conn.close();\n"
+        + "\t\t} catch(Exception e) {\n\n"
+        + "\t\te.printStackTrace();\n"
+        + "\t\t}\n"
+        + "\t}\n}";
+
+    // combining all the code generated in the function and returning it back to the Project.java class
+    // to write it into the file
+    String code = importCommands + generatedCodeClass + dbConnectionObj + mfStructObj + startQuery
+        + firstScan + furtherScans + printOutput + endCode;
+    return code;
+  }
+
+  /**
+   * This function is used to capitalize first letter of the string passed to it.
+   * for example, 'string' becomes 'String'.
+   * */
+  String captalizeFirstLetter(String str) {
+    return str.substring(0, 1).toUpperCase() + str.substring(1);
+  }
+
+  /**
+   * This function generates the MfStructure for our input query
+   * in file name MfStruct.java based on the type of attribute from infoSchema
+   * MfStruct generates an object with all the necessary values. For average, it declares 
+   * it as a double, for all other integer related, int type and for others, String.
+   * 
+   * This is STEP 1 for our project workflow
+   * */
   public String generateMfStructClass() {
     StringBuilder mfStruct = new StringBuilder();
     StringJoiner classVars = new StringJoiner(";\n", "", ";");
@@ -152,9 +253,6 @@ public class CodeGenerator {
       if (var.contains("min")) {
         constructorVars.add("\t\tthis." + var + " = Integer.MAX_VALUE");
       }
-      // else if(var.contains("max")) {
-      //   constructorVars.add("\t\tthis." + var + " = Integer.MIN_VALUE");
-      // }
     }
 
     mfStruct.append("\n// MFStruct created using Grouping Attributes and F vectors \n");
@@ -169,60 +267,15 @@ public class CodeGenerator {
 
     return mfStruct.toString();
   }
-
-  public String generateCode() {
-    String importCommands = "package qp.output;\n"
-        + "import java.sql.*;\n"
-        + "import java.util.ArrayList;\n"
-        + "import java.util.HashSet;\n"
-        + "import java.util.Iterator;\n"
-        + "import java.util.Set;\n"
-        + "import java.sql.Connection;\n\n";
-
-    // Generate MFStruct class
-
-
-    String generatedCodeClass = "public class Query {\n";
-    String dbConnectionObj = "\tstatic Connection conn;\n";
-
-    // array of MFStruct objects
-    String mfStructObj = "\tstatic ArrayList<MfStruct> mfStruct = new ArrayList<MfStruct>();\n";
-
-    String startQuery = "\tpublic static void main(String[] args) {\n"
-        + "\t\ttry {\n"
-        + "\t\t\tSystem.out.println(\"----Generated Code-----\");\n"
-        + "\t\t\tConnectDB newConnection = new ConnectDB();\n"
-        + "\t\t\tconn = newConnection.getConnection();\n"
-        + "\t\t\tString queryStr = \"SELECT * FROM sales\";\n"
-        + "\t\t\tStatement st = conn.createStatement();\n"
-        + "\t\t\tResultSet rs;\n";
-
-    generateAggregateFunctions();
-    String firstScan = populateGroupingAttributes();
-
-    String furtherScans = performOpOnGV();
-
-    String printOutput = generatePrintOutput();
-
-    String endCode = "\n"
-        + "\t\t\t"
-        + "conn.close();\n"
-        + "\t\t} catch(Exception e) {\n\n"
-        + "\t\te.printStackTrace();\n"
-        + "\t\t}\n"
-        + "\t}\n}";
-
-    String code = importCommands + generatedCodeClass + dbConnectionObj + mfStructObj + startQuery
-        + firstScan + furtherScans + printOutput + endCode;
-
-    // write to file "/Output/FinalQuery.java"
-    return code;
-  }
-
-  String captalizeFirstLetter(String str) {
-    return str.substring(0, 1).toUpperCase() + str.substring(1);
-  }
-
+  
+  /**
+   * This function is the step 2 in our project,
+   * i.e. Scan through the table and take out values based on grouping attributes
+   * If not present in the mfStruct array, add it, if present ignore.
+   * 
+   * This function is also responsible for calculating the aggregates on columns outside the
+   * group. i.e. performing EMF aggregate calculation
+   * */
   String populateGroupingAttributes() {
     StringBuilder generateStep1 = new StringBuilder();
     StringJoiner buildUniqKey = new StringJoiner(" + ", "(", ")");
@@ -230,7 +283,7 @@ public class CodeGenerator {
     StringJoiner conditions = new StringJoiner(" && ", "(", ")");
 
     generateStep1.append("\t\t\t// STEP 1: Populate Grouping attributes\n");
-    generateStep1.append("\t\t\tSystem.out.println(\"----STEP 1: Perform 0th Scan-------\");\n");
+    generateStep1.append("\t\t\t//----STEP 1: Perform 0th Scan-------\n");
     generateStep1.append("\t\t\trs = st.executeQuery(queryStr);\n");
     generateStep1.append("\t\t\tSet<String> uniqueGAttr = new HashSet<String>();\n");
     generateStep1.append("\t\t\tMfStruct newRow;\n");
@@ -287,13 +340,21 @@ public class CodeGenerator {
     return null;
   }
 
+  
+  /**
+   * This function is parsing the condition vector, i.e. generating java expressions from 
+   * the input query conditions that are passed to the input query. This function even 
+   * takes care of the AND and OR conditions between each condition vector, for. e.g. '1.state = "NY" and 1.quant > 30'
+   * */
   String parseConditionVector(String conditionVector, int groupingVariableNum) {
     StringBuilder gvCondition = new StringBuilder();
     String[] conditions = conditionVector.split(" ");
     String[] splittedCondition = new String[3];
     String operator = "";
     boolean equalsFlag = false;
-
+    
+    // for each condition from the condition vector, do the following
+    // if it's and replace it with '&&', if it's or replace it with '||'
     for (String condition : conditions) {
       switch (condition.toLowerCase()) {
       case "and":
@@ -306,7 +367,8 @@ public class CodeGenerator {
         // Remove grouping variable number from condition
         condition = condition.replace(groupingVariableNum + ".", "");
         equalsFlag = false;
-
+        
+        // Set operator based on the condition
         if(condition.contains("<=")) {
           operator = "<=";
           splittedCondition = condition.split("<=");
@@ -331,6 +393,7 @@ public class CodeGenerator {
           splittedCondition = condition.split(">");
         }
 
+        // append together to parse the condition vector and generate equivalent java expression
         gvCondition.append(rsGetColumnValue(splittedCondition[0]));
         gvCondition.append(operator);
         gvCondition.append(splittedCondition[1]);
@@ -343,6 +406,9 @@ public class CodeGenerator {
     return gvCondition.toString();
   }
 
+  /**
+   * This function is generating aggregate functions as provided in the input query
+   * */
   void generateAggregateFunctions() {
     // String[] aggregateFunctions = new String[2];
     StringJoiner avgs = new StringJoiner("\t\t\t\t");;
@@ -362,7 +428,7 @@ public class CodeGenerator {
             aggregates.append("row." + fVector + " += " + rsGetColumnValue(arr[2]) + ";");
             break;
           case "avg":
-            avgs.add("\tavg = "
+            avgs.add("\n\t\t\t\tavg = "
               + "row." + fVector.replace("avg", "count") + " > 0 ? "
               + "(double) row." + fVector.replace("avg", "sum") + " / "
               + "row." + fVector.replace("avg", "count") + " : 0;\n"
@@ -390,7 +456,11 @@ public class CodeGenerator {
     // return aggregateFunctions;
   }
 
-  // run loop on selected aggregate functions
+  /**
+   * This function is STEP 3 of our project, 
+   * i.e. for each grouping variable, generate a while loop to scan the table and
+   * do the needful based on the condition
+   * */
   String performOpOnGV() {
     StringBuilder operationOnGV = new StringBuilder();
     // STEP 1: Perform operations on grouping variable\n";
@@ -441,10 +511,10 @@ public class CodeGenerator {
     operationOnGV.append("\t\t\t\tMfStruct row = itr.next();\n\t\t\t\t");
     operationOnGV.append("//Calculate Average\n\t\t\t");
     operationOnGV.append(aggregateFunctions.get("avgs"));
+    
+    // apply having condition if any
     operationOnGV.append("\n\t\t\t\t//Apply Having Condition");
     operationOnGV.append("\n\t\t\t\tif (!(");
-
-    // Apply Having condition
     StringJoiner havingCondition = new StringJoiner(" ");
     String[] hc = inputQuery.G.split(" ");
     for(String con: hc) {
@@ -461,12 +531,18 @@ public class CodeGenerator {
 
     operationOnGV.append(havingCondition.toString());
     operationOnGV.append(")) {\n");
+    // remove unmatched row based on havingCondition
     operationOnGV.append("\t\t\t\t\titr.remove();\n");
     operationOnGV.append("\t\t\t\t}\n");
     operationOnGV.append("\t\t\t}\n");
     return operationOnGV.toString();
   }
 
+  /**
+   * This function is STEP 4 of our project, 
+   * i.e. generate the final loop to iterate over each row in mfStruct and print the output on the console
+   * Strings are left aligned, and integer values are right aligned
+   * */
   String generatePrintOutput() {
 	StringBuilder selectAttrs = new StringBuilder();
 	StringBuilder separator = new StringBuilder();

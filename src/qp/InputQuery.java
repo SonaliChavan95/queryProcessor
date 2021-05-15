@@ -24,7 +24,9 @@ public class InputQuery {
   // Having Condition
   public String G;
 
-
+  /**
+   * Constructor for this class
+   * */
   InputQuery() {
     this.S = new ArrayList<String>();
     this.V = new ArrayList<String>();

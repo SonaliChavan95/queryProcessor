@@ -1,5 +1,7 @@
 /**
- *
+ * This class is responsible for making connection to the database
+ * For the main Project.java, this file provides infoSchema regarding the 
+ * sales table
  */
 package qp;
 
@@ -13,23 +15,23 @@ import java.util.HashMap;
 public class ConnectDB {
   Connection connection;
   public HashMap<String, String> infoSchema = new HashMap<String, String>();
+  private final static String DB_NAME = "sales";
+  private final static String USER = "abhinavgarg";
+  private final static String PASS = "hello123";
 
   ConnectDB() {
     connection = null;
   }
-
+  
+  
+  /**
+   * connecting to the database and returning the connection object back
+   * @return connection
+   * back to the Project.java class
+   */
   public Connection getConnection() {
-    // JDBC driver name and database URL
-    // final String JDBC_DRIVER = "org.postgresql.Driver";
-    String username = System.getenv("DB_USER");
-    String pass = System.getenv("DB_PASS");
-    String tableName = System.getenv("TABLE");
-
-    final String DB_URL = "jdbc:postgresql://localhost:5432/"+tableName;
-
-    // Database credentials
-    final String USER = username;
-    final String PASS = pass;
+    // JDBC driver name and database     
+    final String DB_URL = "jdbc:postgresql://localhost:5432/"+DB_NAME;
 
     try {
 
@@ -51,6 +53,9 @@ public class ConnectDB {
     return connection;
   }
 
+  /**
+   * sets info schema on the ConnectDB class so that we can fetch this info schema
+   */
   void setInfoSchema() {
     String SQLQuery = "SELECT column_name, data_type "
         + "FROM information_schema.columns "
@@ -72,7 +77,8 @@ public class ConnectDB {
       ex.printStackTrace();
     }
   }
-
+  
+  // sets datatype of column based on info schema, i.e. String if character, int if integer.
   private String columnDataType(String type) {
     switch(type) {
     case "character varying":

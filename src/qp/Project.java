@@ -4,25 +4,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 
-// LOGIC: 80%
-// TODO: Check the type of input queries, mf vs emf
-// TODO: Take input interactively and through file
-
-// Styling: 20%
-// TODO: Header Comment (Overall comments about the project) - 10 points
-// TODO: Function Comments - 20 points
-// TODO: Line Comment - 20 points
-// TODO: Meaningful Names (for functions, variables, etc.) - 10 points
-// TODO: (Done)Strings – Left Justified - 15 points
-// TODO: (Done)Numbers – Right Justified - 15 points
-// TODO: (Done)Modular design (use of classes, methods/functions) - 10 points
-
-
 /**
-* This project project is to build a query processing engine for Ad-Hoc OLAP queries.
+* This project is to build a query processing engine for Ad-Hoc OLAP queries.
 * The query construct is based on an extended SQL syntax known as MF and EMF queries
 * (i.e., MultiFeature and Extended MultiFeature queries).
-* @author  @author SonaliChavan, AbhinavGarg
+* @author SonaliChavan, AbhinavGarg
 * @version 1.0
 * @since   2021-04-29
 */
@@ -46,13 +32,13 @@ public class Project {
       // Make the connection and take out schema information
       ConnectDB newConnection = new ConnectDB();
       conn = newConnection.getConnection();
-
+      
       // Generate the code
       CodeGenerator codeGenerator = new CodeGenerator(input_query, newConnection.infoSchema);
 
       String mfStructClass = codeGenerator.generateMfStructClass();
       String connectDB = codeGenerator.generateConnectDB();
-      String code = codeGenerator.generateCode();
+      String code = codeGenerator.generateMainCode();
 
       // Create ConnectDB class
       writeToFile(connectDB, "./src/qp/output/ConnectDB.java");

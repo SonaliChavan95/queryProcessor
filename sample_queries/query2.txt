@@ -5,7 +5,7 @@ NUMBER OF GROUPING VARIABLES(n):
 GROUPING ATTRIBUTES(V):
 cust, prod
 F-VECT([F]):
-sum_1_quant, avg_1_quant, min_2_quant, sum_3_quant, count_3_quant, avg_3_quant, max_2_quant, count_2_quant, max_3_quant, sum_2_quant
+sum_1_quant, sum_2_quant, min_2_quant, max_2_quant, count_2_quant, count_3_quant, sum_3_quant, max_3_quant, avg_3_quant
 SELECT CONDITION-VECT([σ]):
 1.state="NY" and 1.quant<1000
 2.state="NJ"
