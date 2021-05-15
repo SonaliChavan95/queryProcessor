@@ -1,11 +1,11 @@
 SELECT ATTRIBUTE(S):
-cust,prod,sum_2_quant,avg_1_quant,min_0_quant, max_1_quant, avg_0_quant
+cust, prod, sum_2_quant, avg_1_quant, min_0_quant, max_1_quant, avg_0_quant
 NUMBER OF GROUPING VARIABLES(n):
 2
 GROUPING ATTRIBUTES(V):
 cust,prod
 F-VECT([F]):
-sum_2_quant,avg_1_quant, min_0_quant, max_1_quant,avg_0_quant
+sum_2_quant, avg_1_quant, min_0_quant, max_1_quant, avg_0_quant
 SELECT CONDITION-VECT([σ]):
 1.state="NY"
 2.state="NJ"

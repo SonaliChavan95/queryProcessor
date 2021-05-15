@@ -11,10 +11,10 @@ import java.util.StringJoiner;
  * 1. MfStruct.java - through generateMfStructClass() function.
  * 2. ConnectDB.java - through generateConnectDB() function.
  * 3. Query.java - through generateMainCode() function.
- * 
+ *
  * Once these files are generated through this Class,
  * Go to Query.java, and run the class to see the output on the console.
- * 
+ *
  */
 public class CodeGenerator {
   static private InputQuery inputQuery;
@@ -22,7 +22,7 @@ public class CodeGenerator {
   static private Map<String, String> aggregateFunctions = new HashMap<String, String>();
 
   /*
-   * Constructor for this class, 
+   * Constructor for this class,
    * Accepts argument 1 of InputQuery type and argument 2 as infoSchema of Hashmap type
    * */
   public CodeGenerator(InputQuery inputQuery, HashMap<String, String> infoSchema) {
@@ -31,17 +31,17 @@ public class CodeGenerator {
   }
 
   /*
-   * This function generates a ConnectDB class that's responsible 
+   * This function generates a ConnectDB class that's responsible
    * for making connection with the database and perform MF/EMF operations
    * For running it on your local, you can change the DB user-name and password and
-   * database name  below at line number 41, 42 and 43 respectively. 
+   * database name  below at line number 41, 42 and 43 respectively.
    * */
   public String generateConnectDB() {
 	// change these variables as required
 	String username = "abhinavgarg";
 	String password = "hello123";
 	String databaseName = "sales";
-	
+
     String connectDB = "/**\n"
     		+ " * This class is responsible for making connection to the database\n"
     		+ " * For the main Project.java, this file provides infoSchema regarding the \n"
@@ -131,13 +131,13 @@ public class CodeGenerator {
 
   /**
    * This function is the main function that generates the Query.java main class
-   * 
-   * MfStruct generates an object with all the necessary values. For average, it declares 
+   *
+   * MfStruct generates an object with all the necessary values. For average, it declares
    * it as a double, for all other integer related, int type and for others, String.
    * */
   public String generateMainCode() {
-	// Import necessary files and classes
-	String importCommands = "package qp.output;\n"			
+  // Import necessary files and classes
+  String importCommands = "package qp.output;\n"
     // Import necessary files and classes
         + "import java.sql.*;\n"
         + "import java.util.ArrayList;\n"
@@ -153,7 +153,7 @@ public class CodeGenerator {
     // array of MFStruct objects
     String mfStructObj = "\tstatic ArrayList<MfStruct> mfStruct = new ArrayList<MfStruct>();\n";
 
-    // declaring main function that calls ConnectDB class which was generated in one of the 
+    // declaring main function that calls ConnectDB class which was generated in one of the
     // above mentioned functions
     String startQuery = "\tpublic static void main(String[] args) {\n"
         + "\t\ttry {\n"
@@ -163,20 +163,20 @@ public class CodeGenerator {
         + "\t\t\tStatement st = conn.createStatement();\n"
         + "\t\t\tResultSet rs;\n";
 
-    // generate aggregate functions that we are going to use for calculating for 
+    // generate aggregate functions that we are going to use for calculating for
     // MF and EMF queries
     generateAggregateFunctions();
-    
+
     // Performing first scan, populate mf-structure list with grouping attributes
     // values and setting default values for other attributes in mf-structure
     String firstScan = populateGroupingAttributes();
 
-    // For each grouping variable, scan the table, and 
-    // update value into the mfStructure row after fulfilling condition 
+    // For each grouping variable, scan the table, and
+    // update value into the mfStructure row after fulfilling condition
     // and making calculation depending upon the aggregate functions
     String furtherScans = performOpOnGV();
 
-    // this function generates the Final loop that iterates over the mf-structure list 
+    // this function generates the Final loop that iterates over the mf-structure list
     // and prints out the output on the console
     String printOutput = generatePrintOutput();
 
@@ -207,9 +207,9 @@ public class CodeGenerator {
   /**
    * This function generates the MfStructure for our input query
    * in file name MfStruct.java based on the type of attribute from infoSchema
-   * MfStruct generates an object with all the necessary values. For average, it declares 
+   * MfStruct generates an object with all the necessary values. For average, it declares
    * it as a double, for all other integer related, int type and for others, String.
-   * 
+   *
    * This is STEP 1 for our project workflow
    * */
   public String generateMfStructClass() {
@@ -231,11 +231,11 @@ public class CodeGenerator {
     }
     // Add F vectors
     for (String var : inputQuery.F) {
-    	if(var.startsWith("avg")) {
-    		classVars.add("\tdouble " + var);
-    	} else {
-    		classVars.add("\tint " + var);
-    	}
+      if(var.startsWith("avg")) {
+        classVars.add("\tdouble " + var);
+      } else {
+        classVars.add("\tint " + var);
+      }
     }
 
     /**
@@ -272,12 +272,12 @@ public class CodeGenerator {
 
     return mfStruct.toString();
   }
-  
+
   /**
    * This function is the step 2 in our project,
    * i.e. Scan through the table and take out values based on grouping attributes
    * If not present in the mfStruct array, add it, if present ignore.
-   * 
+   *
    * This function is also responsible for calculating the aggregates on columns outside the
    * group. i.e. performing EMF aggregate calculation
    * */
@@ -322,7 +322,11 @@ public class CodeGenerator {
     generateStep1.append("}\n\t\t\t");
 
     for (String groupingAttribute : inputQuery.V) {
-      conditions.add("row." + groupingAttribute + ".equals(" + groupingAttribute + ")");
+      if(infoSchema.get(groupingAttribute).equals("String")) {
+        conditions.add("row." + groupingAttribute + ".equals(" + groupingAttribute + ")");
+      } else {
+        conditions.add("row." + groupingAttribute + " == " + groupingAttribute);
+      }
     }
 
     generateStep1.append("\tfor(MfStruct row: mfStruct) {\n");
@@ -345,10 +349,10 @@ public class CodeGenerator {
     return null;
   }
 
-  
+
   /**
-   * This function is parsing the condition vector, i.e. generating java expressions from 
-   * the input query conditions that are passed to the input query. This function even 
+   * This function is parsing the condition vector, i.e. generating java expressions from
+   * the input query conditions that are passed to the input query. This function even
    * takes care of the AND and OR conditions between each condition vector, for. e.g. '1.state = "NY" and 1.quant > 30'
    * */
   String parseConditionVector(String conditionVector, int groupingVariableNum) {
@@ -357,7 +361,7 @@ public class CodeGenerator {
     String[] splittedCondition = new String[3];
     String operator = "";
     boolean equalsFlag = false;
-    
+
     // for each condition from the condition vector, do the following
     // if it's and replace it with '&&', if it's or replace it with '||'
     for (String condition : conditions) {
@@ -372,7 +376,7 @@ public class CodeGenerator {
         // Remove grouping variable number from condition
         condition = condition.replace(groupingVariableNum + ".", "");
         equalsFlag = false;
-        
+
         // Set operator based on the condition
         if(condition.contains("<=")) {
           operator = "<=";
@@ -387,9 +391,14 @@ public class CodeGenerator {
           operator = "<>";
           splittedCondition = condition.split("<>");
         } else if (condition.contains("=")) {
-          equalsFlag = true;
-          operator = ".equals(";
           splittedCondition = condition.split("=");
+          if(infoSchema.get(splittedCondition[0]).equals("String")) {
+            equalsFlag = true;
+            operator = ".equals(";
+          } else {
+            operator = "==";
+          }
+
         } else if (condition.contains("<")){
           operator = "<";
           splittedCondition = condition.split("<");
@@ -415,13 +424,11 @@ public class CodeGenerator {
    * This function is generating aggregate functions as provided in the input query
    * */
   void generateAggregateFunctions() {
-    // String[] aggregateFunctions = new String[2];
     StringJoiner avgs = new StringJoiner("\t\t\t\t");;
     StringBuilder aggregates;
     String[] arr;
 
     for(int i = 0; i <= inputQuery.n; i++) {
-
       aggregates =  new StringBuilder();
       for (String fVector : inputQuery.F) {
         if (fVector.contains(i + "")) {
@@ -458,11 +465,10 @@ public class CodeGenerator {
     }
 
     aggregateFunctions.put("avgs", avgs.toString());
-    // return aggregateFunctions;
   }
 
   /**
-   * This function is STEP 3 of our project, 
+   * This function is STEP 3 of our project,
    * i.e. for each grouping variable, generate a while loop to scan the table and
    * do the needful based on the condition
    * */
@@ -470,14 +476,24 @@ public class CodeGenerator {
     StringBuilder operationOnGV = new StringBuilder();
     // STEP 1: Perform operations on grouping variable\n";
     StringJoiner conditions = new StringJoiner(" && ", "(", ")");
-//    String[] aggregateFunctions = new String[2];
 
     for (int i = 1; i <= inputQuery.n; i++) {
       operationOnGV.append("\n\t\t\trs = st.executeQuery(queryStr);\n");
       operationOnGV.append("\t\t\twhile(rs.next()) {\n");
 
+      for (String groupingAttribute : inputQuery.V) {
+          if (infoSchema.containsKey(groupingAttribute)) {
+            operationOnGV.append("\t\t\t\t\t");
+            operationOnGV.append(groupingAttribute);
+            operationOnGV.append(" = ");
+            operationOnGV.append(rsGetColumnValue(groupingAttribute));
+            operationOnGV.append(";\n");
+          }
+        }
+
       for (String var : inputQuery.CV) {
         if (var.startsWith("" + i)) {
+          conditions = new StringJoiner(" && ", "(", ")");
           // Parse condition vector for nth grouping variable
           // 1.state='NY' and 1.quant>30
           operationOnGV.append("\t\t\t\tif(");
@@ -485,15 +501,11 @@ public class CodeGenerator {
           operationOnGV.append(") {\n");
 
           for (String groupingAttribute : inputQuery.V) {
-            if (infoSchema.containsKey(groupingAttribute)) {
-              operationOnGV.append("\t\t\t\t\t");
-              operationOnGV.append(groupingAttribute);
-              operationOnGV.append(" = ");
-              operationOnGV.append(rsGetColumnValue(groupingAttribute));
-              operationOnGV.append(";\n");
+            if(infoSchema.get(groupingAttribute).equals("String")) {
+              conditions.add("row." + groupingAttribute + ".equals(" + groupingAttribute + ")");
+            } else {
+              conditions.add("row." + groupingAttribute + " == " + groupingAttribute);
             }
-
-            conditions.add("row." + groupingAttribute + ".equals(" + groupingAttribute + ")");
           }
 
           operationOnGV.append("\t\t\t\t\tfor(MfStruct row: mfStruct) {\n");
@@ -501,7 +513,6 @@ public class CodeGenerator {
           operationOnGV.append(conditions);
           operationOnGV.append("{\n");
 
-          // aggregateFunctions = generateAggregateFunctions(i);
           operationOnGV.append(aggregateFunctions.get(i + ""));
 
           operationOnGV.append("\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n");
@@ -516,49 +527,49 @@ public class CodeGenerator {
     operationOnGV.append("\t\t\t\tMfStruct row = itr.next();\n\t\t\t\t");
     operationOnGV.append("//Calculate Average\n\t\t\t");
     operationOnGV.append(aggregateFunctions.get("avgs"));
-    
+
     StringJoiner havingCondition = new StringJoiner(" ");
     // apply having condition if any
     if(inputQuery.G.length() != 0) {
-	    operationOnGV.append("\n\t\t\t\t//Apply Having Condition");
-	    operationOnGV.append("\n\t\t\t\tif (!(");
-	    String[] hc = inputQuery.G.split(" ");
-	    for(String con: hc) {
-	      if(inputQuery.F.contains(con)) {
-	        havingCondition.add("row." + con);
-	      } else if(con.equals("and")) {
-	        havingCondition.add("&&");
-	      } else if(con.equals("or")) {
-	        havingCondition.add("||");
-	      } else {
-	        havingCondition.add(con);
-	      }
-	    }
-	
-	    operationOnGV.append(havingCondition.toString());
-	    operationOnGV.append(")) {\n");
-	    // remove unmatched row based on havingCondition
-	    operationOnGV.append("\t\t\t\t\titr.remove();\n");
-	    operationOnGV.append("\t\t\t\t}\n");
+      operationOnGV.append("\n\t\t\t\t//Apply Having Condition");
+      operationOnGV.append("\n\t\t\t\tif (!(");
+      String[] hc = inputQuery.G.split(" ");
+      for(String con: hc) {
+        if(inputQuery.F.contains(con)) {
+          havingCondition.add("row." + con);
+        } else if(con.equals("and")) {
+          havingCondition.add("&&");
+        } else if(con.equals("or")) {
+          havingCondition.add("||");
+        } else {
+          havingCondition.add(con);
+        }
+      }
+
+      operationOnGV.append(havingCondition.toString());
+      operationOnGV.append(")) {\n");
+      // remove unmatched row based on havingCondition
+      operationOnGV.append("\t\t\t\t\titr.remove();\n");
+      operationOnGV.append("\t\t\t\t}\n");
     }
-    
+
     operationOnGV.append("\t\t\t}\n");
     return operationOnGV.toString();
   }
 
   /**
-   * This function is STEP 4 of our project, 
+   * This function is STEP 4 of our project,
    * i.e. generate the final loop to iterate over each row in mfStruct and print the output on the console
    * Strings are left aligned, and integer values are right aligned
    * */
   String generatePrintOutput() {
-	StringBuilder selectAttrs = new StringBuilder();
-	StringBuilder separator = new StringBuilder();
+  StringBuilder selectAttrs = new StringBuilder();
+  StringBuilder separator = new StringBuilder();
     StringBuilder attrValues = new StringBuilder();
-	StringBuilder printOutput = new StringBuilder();
-	StringBuilder printZero = new StringBuilder();
+  StringBuilder printOutput = new StringBuilder();
+  StringBuilder printZero = new StringBuilder();
 
-	printOutput.append("\t\t\tif(mfStruct.size() > 0) {");
+  printOutput.append("\t\t\tif(mfStruct.size() > 0) {");
     // Table Header
     for (String var : inputQuery.S) {
       String attr = "";
@@ -587,7 +598,7 @@ public class CodeGenerator {
       } else if (var.equals("prod")) {
         value = "\"%-10s\", row."+ var;
       } else if (var.contains("min")) {
-    	String varName = "print_"+var;
+      String varName = "print_"+var;
         value = "\"%12s\", "+varName;
 
         // check for min value, if record value not present for selected group, print 0

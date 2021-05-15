@@ -22,34 +22,32 @@ public class Query {
 			Set<String> uniqueGAttr = new HashSet<String>();
 			MfStruct newRow;
 			String uniqueKey;
-			String cust; 
 			String prod; 
+			int month; 
 
 			while(rs.next()) {
-				cust = rs.getString("cust");
 				prod = rs.getString("prod");
-				uniqueKey = (cust + prod).toLowerCase();
+				month = rs.getInt("month");
+				uniqueKey = (prod + month).toLowerCase();
 				if(!uniqueGAttr.contains(uniqueKey)) {
 					uniqueGAttr.add(uniqueKey);
-					newRow = new MfStruct(cust , prod);
+					newRow = new MfStruct(prod , month);
 					mfStruct.add(newRow);
 				}
 				for(MfStruct row: mfStruct) {
-					if(row.cust.equals(cust) && row.prod.equals(prod)){
+					if(row.prod.equals(prod) && row.month == month){
 					}
 				}
 			}
 
 			rs = st.executeQuery(queryStr);
 			while(rs.next()) {
-				if(rs.getString("state").equals("NY") && rs.getInt("quant")<1000) {
-					cust = rs.getString("cust");
 					prod = rs.getString("prod");
+					month = rs.getInt("month");
+				if(rs.getString("prod").equals(prod) && rs.getInt("month")>month-1) {
 					for(MfStruct row: mfStruct) {
-						if(row.cust.equals(cust) && row.prod.equals(prod)){
+						if(row.prod.equals(prod) && row.month == month){
 							row.count_1_quant++;
-							row.sum_1_quant += rs.getInt("quant");
-							
 
 						}
 					}
@@ -58,30 +56,12 @@ public class Query {
 
 			rs = st.executeQuery(queryStr);
 			while(rs.next()) {
-				if(rs.getString("state").equals("NJ")) {
-					cust = rs.getString("cust");
 					prod = rs.getString("prod");
+					month = rs.getInt("month");
+				if(rs.getString("prod").equals(prod) && rs.getInt("month")>month+1) {
 					for(MfStruct row: mfStruct) {
-						if(row.cust.equals(cust) && row.prod.equals(prod) && row.cust.equals(cust) && row.prod.equals(prod)){
-							row.sum_2_quant += rs.getInt("quant");
+						if(row.prod.equals(prod) && row.month == month){
 							row.count_2_quant++;
-
-						}
-					}
-				}
-			}
-
-			rs = st.executeQuery(queryStr);
-			while(rs.next()) {
-				if(rs.getString("state").equals("CT")) {
-					cust = rs.getString("cust");
-					prod = rs.getString("prod");
-					for(MfStruct row: mfStruct) {
-						if(row.cust.equals(cust) && row.prod.equals(prod) && row.cust.equals(cust) && row.prod.equals(prod) && row.cust.equals(cust) && row.prod.equals(prod)){
-							row.count_3_quant++;
-							
-							row.sum_3_quant += rs.getInt("quant");
-							row.max_3_quant = Math.max(row.max_3_quant, rs.getInt("quant"));
 
 						}
 					}
@@ -94,41 +74,20 @@ public class Query {
 			while (itr.hasNext()) {
 				MfStruct row = itr.next();
 				//Calculate Average
-			
-				avg = row.count_1_quant > 0 ? (double) row.sum_1_quant / row.count_1_quant : 0;
-				row.avg_1_quant = Math.round(avg * 100) / 100D;				
-				avg = row.count_3_quant > 0 ? (double) row.sum_3_quant / row.count_3_quant : 0;
-				row.avg_3_quant = Math.round(avg * 100) / 100D;
-				//Apply Having Condition
-				if (!(row.sum_1_quant > row.sum_2_quant || row.avg_1_quant > row.avg_3_quant)) {
-					itr.remove();
-				}
-			}
+						}
 			if(mfStruct.size() > 0) {
 				//Scan mf struct and print out the results
-				System.out.printf("%-10s","Customer");
 				System.out.printf("%-10s","Product");
-				System.out.printf("%-12s","sum_1_quant  ");
-				System.out.printf("%-12s","avg_1_quant  ");
-				System.out.printf("%-12s","sum_2_quant  ");
+				System.out.printf("%-12s","month  ");
+				System.out.printf("%-12s","count_1_quant  ");
 				System.out.printf("%-12s","count_2_quant  ");
-				System.out.printf("%-12s","count_3_quant  ");
-				System.out.printf("%-12s","sum_3_quant  ");
-				System.out.printf("%-12s","max_3_quant  ");
-				System.out.printf("%-12s","avg_3_quant  ");
-				System.out.println("\n========= ========= ============ ============ ============ ============ ============ ============ ============ ============ ");
+				System.out.println("\n========= ============ ============ ============ ");
 
 				for(MfStruct row: mfStruct) {
-					System.out.printf("%-10s", row.cust);
 					System.out.printf("%-10s", row.prod);
-					System.out.printf("%12s", row.sum_1_quant);
-					System.out.printf("%12s", row.avg_1_quant);
-					System.out.printf("%12s", row.sum_2_quant);
+					System.out.printf("%12s", row.month);
+					System.out.printf("%12s", row.count_1_quant);
 					System.out.printf("%12s", row.count_2_quant);
-					System.out.printf("%12s", row.count_3_quant);
-					System.out.printf("%12s", row.sum_3_quant);
-					System.out.printf("%12s", row.max_3_quant);
-					System.out.printf("%12s", row.avg_3_quant);
 					System.out.print('\n');
 				}
 			}

@@ -28,7 +28,7 @@ public class Project {
 		  // take input from the user whether he wants to perform mf/emf query
 		  Scanner takeInput = new Scanner(System.in);
 		  System.out.println("Please specify whether you want to perform an MF, EMF or standard query?");
-		  System.out.println("Specify:\n1 for EMF\n2 for MF\n3 for Standard");
+		  System.out.println("Specify:\n1 for EMF\n2 for MF\n3 for Standard\n4 for Complex MF");
 		  String queryType = takeInput.nextLine();
 		  takeInput.close();
 		  
@@ -43,6 +43,9 @@ public class Project {
 		  } else if (queryType.toLowerCase().trim().equals("3")){ 
 			  inputFile = "./sample_queries/query3.txt";
 			  type="Standard";
+		  } else if (queryType.toLowerCase().trim().equals("4")){ 
+			  inputFile = "./sample_queries/query4.txt";
+			  type="Complex MF";
 		  } else {
 			  throw new Error("Invalid input. Please specify either 'MF' or 'EMF' or 'Standard'");
 		  }
