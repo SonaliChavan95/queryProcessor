@@ -38,7 +38,7 @@ public class Project {
 			  inputFile = "./sample_queries/query1.txt";
 			  type="EMF";
 		  } else if (queryType.toLowerCase().trim().equals("2")) {
-			  inputFile = "./sample_queries/query2.txt";
+			  inputFile = "./sample_queries/query4.txt";
 			  type="MF";
 		  } else if (queryType.toLowerCase().trim().equals("3")){ 
 			  inputFile = "./sample_queries/query3.txt";

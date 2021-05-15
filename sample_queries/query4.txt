@@ -1,0 +1,12 @@
+SELECT ATTRIBUTE(S):
+prod, month, count_1_quant, count_2_quant
+NUMBER OF GROUPING VARIABLES(n):
+2
+GROUPING ATTRIBUTES(V):
+prod, month
+F-VECT([F]):
+count_2_quant
+SELECT CONDITION-VECT([σ]):
+1.prod=prod and 1.month=1.month-1
+2.prod=prod and 2.month=2.month+1
+HAVING_CONDITION(G):

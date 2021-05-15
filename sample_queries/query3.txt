@@ -1,12 +1,10 @@
 SELECT ATTRIBUTE(S):
-cust,prod,avg_0_quant, sum_0_quant
+cust,avg_0_quant, sum_0_quant
 NUMBER OF GROUPING VARIABLES(n):
 0
 GROUPING ATTRIBUTES(V):
-cust,prod
+cust
 F-VECT([F]):
 avg_0_quant
 SELECT CONDITION-VECT([σ]):
-
 HAVING_CONDITION(G):
-avg_0_quant > 1000

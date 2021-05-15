@@ -512,28 +512,31 @@ public class CodeGenerator {
     operationOnGV.append("//Calculate Average\n\t\t\t");
     operationOnGV.append(aggregateFunctions.get("avgs"));
     
-    // apply having condition if any
-    operationOnGV.append("\n\t\t\t\t//Apply Having Condition");
-    operationOnGV.append("\n\t\t\t\tif (!(");
     StringJoiner havingCondition = new StringJoiner(" ");
-    String[] hc = inputQuery.G.split(" ");
-    for(String con: hc) {
-      if(inputQuery.F.contains(con)) {
-        havingCondition.add("row." + con);
-      } else if(con.equals("and")) {
-        havingCondition.add("&&");
-      } else if(con.equals("or")) {
-        havingCondition.add("||");
-      } else {
-        havingCondition.add(con);
-      }
+    // apply having condition if any
+    if(inputQuery.G.length() != 0) {
+	    operationOnGV.append("\n\t\t\t\t//Apply Having Condition");
+	    operationOnGV.append("\n\t\t\t\tif (!(");
+	    String[] hc = inputQuery.G.split(" ");
+	    for(String con: hc) {
+	      if(inputQuery.F.contains(con)) {
+	        havingCondition.add("row." + con);
+	      } else if(con.equals("and")) {
+	        havingCondition.add("&&");
+	      } else if(con.equals("or")) {
+	        havingCondition.add("||");
+	      } else {
+	        havingCondition.add(con);
+	      }
+	    }
+	
+	    operationOnGV.append(havingCondition.toString());
+	    operationOnGV.append(")) {\n");
+	    // remove unmatched row based on havingCondition
+	    operationOnGV.append("\t\t\t\t\titr.remove();\n");
+	    operationOnGV.append("\t\t\t\t}\n");
     }
-
-    operationOnGV.append(havingCondition.toString());
-    operationOnGV.append(")) {\n");
-    // remove unmatched row based on havingCondition
-    operationOnGV.append("\t\t\t\t\titr.remove();\n");
-    operationOnGV.append("\t\t\t\t}\n");
+    
     operationOnGV.append("\t\t\t}\n");
     return operationOnGV.toString();
   }
