@@ -550,6 +550,7 @@ public class CodeGenerator {
 	StringBuilder printOutput = new StringBuilder();
 	StringBuilder printZero = new StringBuilder();
 
+	printOutput.append("\t\t\tif(mfStruct.size() > 0) {");
     // Table Header
     for (String var : inputQuery.S) {
       String attr = "";
@@ -563,12 +564,12 @@ public class CodeGenerator {
         attr = "\"%-12s\",\"" + var + "  \"";
         separator.append("============ ");
       }
-      selectAttrs.append("\t\t\tSystem.out.printf("+attr+");\n");
+      selectAttrs.append("\t\t\t\tSystem.out.printf("+attr+");\n");
     }
 
-    printOutput.append("\n\t\t\t" + "//Scan mf struct and print out the results\n");
+    printOutput.append("\n\t\t\t\t" + "//Scan mf struct and print out the results\n");
     printOutput.append(selectAttrs);
-    printOutput.append("\t\t\tSystem.out.println(\""+"\\n"+ separator +"\");\n\n");
+    printOutput.append("\t\t\t\tSystem.out.println(\""+"\\n"+ separator +"\");\n\n");
 
     // Table Rows
     for (String var : inputQuery.S) {
@@ -582,25 +583,29 @@ public class CodeGenerator {
         value = "\"%12s\", "+varName;
 
         // check for min value, if record value not present for selected group, print 0
-        printZero.append("\n\t\t\t\t");
+        printZero.append("\n\t\t\t\t\t");
         printZero.append("int "+varName+ " = row."+ var +";\n");
-        printZero.append("\t\t\t\t");
-        printZero.append("if ("+ varName +" == Integer.MAX_VALUE) {\n");
         printZero.append("\t\t\t\t\t");
+        printZero.append("if ("+ varName +" == Integer.MAX_VALUE) {\n");
+        printZero.append("\t\t\t\t\t\t");
         printZero.append(varName + "= 0;\n");
-        printZero.append("\t\t\t\t");
+        printZero.append("\t\t\t\t\t");
         printZero.append("}\n");
       } else {
         value = "\"%12s\", row."+ var;
       }
-      attrValues.append("\t\t\t\tSystem.out.printf("+value+");\n");
+      attrValues.append("\t\t\t\t\tSystem.out.printf("+value+");\n");
     }
 
-    printOutput.append("\t\t\tfor(MfStruct row: mfStruct) {\n");
+    printOutput.append("\t\t\t\tfor(MfStruct row: mfStruct) {\n");
     printOutput.append(printZero);
     printOutput.append(attrValues);
-    printOutput.append("\t\t\t\tSystem.out.print('\\n');\n");
+    printOutput.append("\t\t\t\t\tSystem.out.print('\\n');\n");
+    printOutput.append("\t\t\t\t" + "}\n");
     printOutput.append("\t\t\t" + "}\n");
+    printOutput.append("\t\t\telse {\n");
+    printOutput.append("\t\t\t\tSystem.out.println(\"No Results found!!\");\n");
+    printOutput.append("\t\t\t}\n");
 
     return printOutput.toString();
   }
