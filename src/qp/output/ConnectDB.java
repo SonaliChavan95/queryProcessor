@@ -17,7 +17,7 @@ public class ConnectDB {
   public HashMap<String, String> infoSchema = new HashMap<String, String>();
   private final static String USER = "abhinavgarg";
   private final static String PASS = "hello123";
-  private final static String DB_NAME = "sales";
+  private final static String DB_NAME ="sales";
 
   ConnectDB() {
     connection = null;

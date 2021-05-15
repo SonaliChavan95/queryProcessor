@@ -34,9 +34,14 @@ public class CodeGenerator {
    * This function generates a ConnectDB class that's responsible 
    * for making connection with the database and perform MF/EMF operations
    * For running it on your local, you can change the DB user-name and password and
-   * database name  below at line number 57, 58 and 59 respectively. 
+   * database name  below at line number 41, 42 and 43 respectively. 
    * */
   public String generateConnectDB() {
+	// change these variables as required
+	String username = "abhinavgarg";
+	String password = "hello123";
+	String databaseName = "sales";
+	
     String connectDB = "/**\n"
     		+ " * This class is responsible for making connection to the database\n"
     		+ " * For the main Project.java, this file provides infoSchema regarding the \n"
@@ -54,9 +59,9 @@ public class CodeGenerator {
     		+ "public class ConnectDB {\n"
     		+ "  Connection connection;\n"
     		+ "  public HashMap<String, String> infoSchema = new HashMap<String, String>();\n"
-    		+ "  private final static String USER = \"abhinavgarg\";\n"
-    		+ "  private final static String PASS = \"hello123\";\n"
-    		+ "  private final static String DB_NAME = \"sales\";\n"
+    		+ "  private final static String USER = \"" + username +"\";\n"
+    		+ "  private final static String PASS = \"" + password +"\";\n"
+    		+ "  private final static String DB_NAME =\"" + databaseName +"\";\n"
     		+ "\n"
     		+ "  ConnectDB() {\n"
     		+ "    connection = null;\n"
